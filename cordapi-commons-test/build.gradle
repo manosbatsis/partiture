@@ -1,28 +1,5 @@
-apply plugin: 'net.corda.plugins.cordapp'
-apply plugin: 'net.corda.plugins.cordformation'
-apply plugin: 'net.corda.plugins.quasar-utils'
-
-cordapp {
-    targetPlatformVersion 4
-    minimumPlatformVersion 3
-    contract {
-        name "Cordapp Commons Test Contract"
-        vendor "Manos Batsis"
-        versionId 1
-        targetPlatformVersion 4
-        minimumPlatformVersion 3
-    }
-    workflow {
-        name "Cordapp Commons Test Flows"
-        vendor "Manos Batsis"
-        versionId 1
-        targetPlatformVersion 4
-        minimumPlatformVersion 3
-    }
-}
-
 dependencies {
-    api project(":cordapi-commons-service")
+    api project(":cordapi-commons-flow")
 
     implementation "$corda_release_group:corda-core:$corda_release_version"
     implementation "$corda_release_group:corda-confidential-identities:$corda_release_version"

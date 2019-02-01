@@ -1,5 +1,4 @@
 dependencies {
-    api project(":cordapi-commons-service")
 
     implementation "$corda_release_group:corda-core:$corda_release_version"
     implementation "$corda_release_group:corda-confidential-identities:$corda_release_version"

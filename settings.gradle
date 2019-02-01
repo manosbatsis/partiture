@@ -1,5 +1,4 @@
-rootProject.name = "cordapi-commons"
-include("cordapi-commons-model",
-        "cordapi-commons-service",
+rootProject.name = "cordapi"
+include("cordapi-commons-example",
         "cordapi-commons-flow",
         "cordapi-commons-test")
