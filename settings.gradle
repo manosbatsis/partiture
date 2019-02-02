@@ -1,4 +1,4 @@
-rootProject.name = "cordapi"
-include("cordapi-commons-example",
-        "cordapi-commons-flow",
-        "cordapi-commons-test")
+rootProject.name = "partiture-parent"
+include("partiture-example",
+        "partiture",
+        "partiture-test")

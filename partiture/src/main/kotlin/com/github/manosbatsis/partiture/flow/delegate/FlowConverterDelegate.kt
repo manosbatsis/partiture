@@ -17,24 +17,9 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.tx
+package com.github.manosbatsis.partiture.flow.delegate
 
-import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowDelegate
-import net.corda.core.utilities.ProgressTracker
-
-/** Transaction strategy delegate. */
-interface TxStrategy : FlowDelegate {
-
-    /**
-     * Provide the appropriate ProgressTracker to the calling flow.
-     * Must start/end with [com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil.Companion.INITIALISE]
-     * and [com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil.Companion.PROCESS_OUTPUT]
-     * respectively, as those steps are set by the calling flow.
-     */
-    abstract val progressTracker: ProgressTracker
-
-    /** Execute the delegate */
-    @Suspendable
-    abstract fun execute(txContext: TxContext): TxContext
+/** Base flow converter delegate interface */
+interface FlowConverterDelegate<in IN, out OUT>: FlowDelegate {
+    fun convert(source: IN): OUT
 }

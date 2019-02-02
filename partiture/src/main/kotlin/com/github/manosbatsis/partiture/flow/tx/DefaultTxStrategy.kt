@@ -17,16 +17,16 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.tx
+package com.github.manosbatsis.partiture.flow.tx
 
 import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowDelegateBase
-import com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil
+import com.github.manosbatsis.partiture.flow.delegate.FlowDelegateBase
+import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AnonymousParty
-import com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil.Companion as Steps
+import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion as Steps
 
 /** Default call txStrategy implementation */
 open class DefaultTxStrategy : FlowDelegateBase(), TxStrategy {

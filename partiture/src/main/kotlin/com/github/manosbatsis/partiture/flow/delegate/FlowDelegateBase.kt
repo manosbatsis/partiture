@@ -17,15 +17,12 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.io
+package com.github.manosbatsis.partiture.flow.delegate
 
-import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowDelegateBase
-import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
-import net.corda.core.transactions.SignedTransaction
+import com.github.manosbatsis.partiture.flow.PartitureFlow
 
-/** Converts to the finalized transaction of the given [TxContext] by if available, throws an error otherwise. */
-class FinalizedTxOutputConverter : FlowDelegateBase(), OutputConverter<SignedTransaction> {
-    override fun convert(source: TxContext): SignedTransaction {
-        return source.finalized ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
-    }
+/** Base flow delegate implementation */
+abstract class FlowDelegateBase : FlowDelegate {
+    /** The client flow using this delegate, must be set by the same flow before use */
+    override lateinit var clientFlow: PartitureFlow<*, *>
 }

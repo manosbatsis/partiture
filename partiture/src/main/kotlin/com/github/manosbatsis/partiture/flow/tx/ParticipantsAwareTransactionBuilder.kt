@@ -17,7 +17,7 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.tx
+package com.github.manosbatsis.partiture.flow.tx
 
 import co.paralleluniverse.strands.Strand
 import net.corda.core.contracts.*

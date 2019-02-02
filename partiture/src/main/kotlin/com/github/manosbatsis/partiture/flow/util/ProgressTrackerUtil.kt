@@ -17,7 +17,7 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.util
+package com.github.manosbatsis.partiture.flow.util
 
 import net.corda.confidential.IdentitySyncFlow
 import net.corda.core.flows.CollectSignaturesFlow

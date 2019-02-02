@@ -17,10 +17,10 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.io
+package com.github.manosbatsis.partiture.flow.io
 
-import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowConverterDelegate
-import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
+import com.github.manosbatsis.partiture.flow.delegate.FlowConverterDelegate
+import com.github.manosbatsis.partiture.flow.tx.TxContext
 
 /** Converts the given [TxContext] to an instance of flow input of type `OUT`. */
 interface OutputConverter<OUT> : FlowConverterDelegate<TxContext, OUT>

@@ -17,10 +17,12 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.io
+package com.github.manosbatsis.partiture.flow.delegate
 
-import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowConverterDelegate
-import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
+import com.github.manosbatsis.partiture.flow.PartitureFlow
 
-/** Converts flow input of type `IN` to a [TxContext] instance */
-interface InputConverter<IN> : FlowConverterDelegate<IN, TxContext>
+/** Base flow delegate interface */
+interface FlowDelegate {
+    /** The client flow using this delegate */
+    var clientFlow: PartitureFlow<*, *>
+}

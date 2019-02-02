@@ -20,10 +20,10 @@
 package mypackage.cordapp.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.CordapiFlow
-import com.github.manosbatsis.cordapi.commons.flow.io.FinalizedTxOutputConverter
-import com.github.manosbatsis.cordapi.commons.flow.tx.ParticipantsAwareTransactionBuilder
-import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
+import com.github.manosbatsis.partiture.flow.PartitureFlow
+import com.github.manosbatsis.partiture.flow.io.FinalizedTxOutputConverter
+import com.github.manosbatsis.partiture.flow.tx.ParticipantsAwareTransactionBuilder
+import com.github.manosbatsis.partiture.flow.tx.TxContext
 import mypackage.cordapp.contract.YO_CONTRACT_ID
 import mypackage.cordapp.contract.YoContract
 import net.corda.core.contracts.requireThat
@@ -36,7 +36,7 @@ import net.corda.core.transactions.SignedTransaction
  */
 @InitiatingFlow
 @StartableByRPC
-class YoFlow(val target: Party) : CordapiFlow<Party, SignedTransaction>(
+class YoFlow(val target: Party) : PartitureFlow<Party, SignedTransaction>(
         input = target,
         outputConverter = FinalizedTxOutputConverter()) {
 
