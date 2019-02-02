@@ -53,7 +53,7 @@ class YoContract: Contract {
     data class YoState(val origin: Party,
                        val target: Party,
                        val yo: String = "Yo!") : ContractState, QueryableState {
-        override val participants get() = listOf(target)
+        override val participants get() = listOf(origin, target)
         override fun toString() = "${origin.name}: $yo"
         override fun supportedSchemas() = listOf(YoSchemaV1)
         override fun generateMappedObject(schema: MappedSchema) = YoSchemaV1.PersistentYoState(

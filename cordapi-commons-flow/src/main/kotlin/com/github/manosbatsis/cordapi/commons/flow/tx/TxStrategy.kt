@@ -17,7 +17,24 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.input
+package com.github.manosbatsis.cordapi.commons.flow.tx
 
-/** Used to mark a type as flow input data */
-interface FlowInput
+import co.paralleluniverse.fibers.Suspendable
+import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowDelegate
+import net.corda.core.utilities.ProgressTracker
+
+/** Transaction strategy delegate. */
+interface TxStrategy : FlowDelegate {
+
+    /**
+     * Provide the appropriate ProgressTracker to the calling flow.
+     * Must start/end with [com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil.Companion.INITIALISE]
+     * and [com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil.Companion.PROCESS_OUTPUT]
+     * respectively, as those steps are set by the calling flow.
+     */
+    abstract val progressTracker: ProgressTracker
+
+    /** Execute the delegate */
+    @Suspendable
+    abstract fun execute(txContext: TxContext): TxContext
+}

@@ -20,52 +20,66 @@
 package com.github.manosbatsis.cordapi.commons.flow
 
 import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.base.BaseFlowLogic
+import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowConverterDelegate
+import com.github.manosbatsis.cordapi.commons.flow.io.InputConverter
+import com.github.manosbatsis.cordapi.commons.flow.io.OutputConverter
+import com.github.manosbatsis.cordapi.commons.flow.tx.DefaultTxStrategy
 import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
-import com.github.manosbatsis.cordapi.commons.flow.call.CallDelegate
-import com.github.manosbatsis.cordapi.commons.flow.call.SimpleCallDelegate
+import com.github.manosbatsis.cordapi.commons.flow.tx.TxStrategy
+import com.github.manosbatsis.cordapi.commons.flow.util.CordapiBaseUtilsFlow
 import com.github.manosbatsis.cordapi.commons.flow.util.ProgressTrackerUtil
 import net.corda.core.flows.FlowLogic
-import net.corda.core.utilities.ProgressTracker
 
 /**
- * Base [FlowLogic] implementation utilizing [TxContext] and [CallDelegate]
+ * Base [FlowLogic] implementation utilizing [TxContext] and [TxStrategy]
  */
-abstract class CordapiFlow<out OUT>(
-        val callDelegate: CallDelegate = SimpleCallDelegate()
-) : BaseFlowLogic<OUT>() {
+abstract class CordapiFlow<IN, OUT>(
+        val input: IN,
+        val txStrategy: TxStrategy = DefaultTxStrategy(),
+        val inputConverter: InputConverter<IN>? = null,
+        val outputConverter: OutputConverter<OUT>? = null
+) : CordapiBaseUtilsFlow<OUT>() {
 
-    // TODO  obtain tracker from delegate?
-    override val progressTracker: ProgressTracker = ProgressTracker(
-            ProgressTrackerUtil.Companion.INITIALISE,
-            ProgressTrackerUtil.Companion.PROCESS_INPUT,
-            ProgressTrackerUtil.Companion.PREPARE_TRANSACTION_DATA,
-            ProgressTrackerUtil.Companion.VERIFY_TRANSACTION_DATA,
-            ProgressTrackerUtil.Companion.SIGN_INITIAL_TX,
-            ProgressTrackerUtil.Companion.CREATE_SESSIONS,
-            ProgressTrackerUtil.Companion.GATHER_SIGNATURES,
-            ProgressTrackerUtil.Companion.SYNC_IDENTITIES,
-            ProgressTrackerUtil.Companion.FINALIZE)
-
-    init {
-        this.progressTracker.currentStep = ProgressTrackerUtil.Companion.INITIALISE
-    }
-
+    /** Obtain the appropriate progressTracker from the given [TxStrategy] */
+    override val progressTracker = txStrategy.progressTracker
 
     /**
      * Prepare a context with items relevant to flow transaction(s):
      * Notary, input/output/reference states, attachments, commands and so on.
-     * */
-    abstract fun createTxContext(): TxContext
+     *
+     * The default implementation requires a non-null [InputConverter] parameter
+     * via the flow's constructor ; either provide one or override the method to convert manually.
+     */
+    @Suspendable open fun convertInput(): TxContext {
+        return convert(inputConverter, input, "Input")
+    }
 
-    /** Convert the given signed transactions to the desired type for flow `out`. */
-    abstract fun toOut(txContext: TxContext): OUT
+    /**
+     * Convert the given signed transactions to the desired type for flow `out`.
+     *
+     * The default implementation requires a non-null [OutputConverter] parameter
+     * via the flow's constructor ; either provide one or override the method to convert manually.
+     */
+    @Suspendable fun convertOutput(txContext: TxContext): OUT {
+        return convert(outputConverter, txContext, "Output")
+    }
 
-    @Suspendable
-    override fun call(): OUT {
-        // Delegate processing to callDelegate
-        val txResults = this.callDelegate.execute(this, createTxContext())
+    @Suspendable final override fun call(): OUT {
+        progressTracker.currentStep = ProgressTrackerUtil.Companion.INITIALISE
+        // Delegate processing to txStrategy
+        txStrategy.clientFlow = this
+        val txResults = txStrategy.execute(convertInput())
         // Process and return output
-        return this.toOut(txResults)
+        progressTracker.currentStep = ProgressTrackerUtil.Companion.PROCESS_OUTPUT
+        return this.convertOutput(txResults)
+    }
+
+    private fun <I, O> convert(converter: FlowConverterDelegate<I, O>?, input: I, sourceName: String): O {
+        return if(converter != null) {
+            converter.clientFlow = this
+            converter.convert(input)
+        }
+        else throw NotImplementedError("This convert${sourceName}() implementation requires an ${sourceName}ConverterDelegate. " +
+                "Either provide one in the flow's constructor or override the method to convert manually.")
     }
 }

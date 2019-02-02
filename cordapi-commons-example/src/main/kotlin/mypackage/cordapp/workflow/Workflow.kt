@@ -20,13 +20,12 @@
 package mypackage.cordapp.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.CordapiFinTxFlow
-import com.github.manosbatsis.cordapi.commons.flow.tx.SignersAwareTransactionBuilder
+import com.github.manosbatsis.cordapi.commons.flow.CordapiFlow
+import com.github.manosbatsis.cordapi.commons.flow.io.FinalizedTxOutputConverter
+import com.github.manosbatsis.cordapi.commons.flow.tx.ParticipantsAwareTransactionBuilder
 import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
 import mypackage.cordapp.contract.YO_CONTRACT_ID
 import mypackage.cordapp.contract.YoContract
-import net.corda.core.contracts.Command
-import net.corda.core.contracts.StateAndContract
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
@@ -37,19 +36,17 @@ import net.corda.core.transactions.SignedTransaction
  */
 @InitiatingFlow
 @StartableByRPC
-class YoFlow(val target: Party) : CordapiFinTxFlow() {
+class YoFlow(val target: Party) : CordapiFlow<Party, SignedTransaction>(
+        input = target,
+        outputConverter = FinalizedTxOutputConverter()) {
 
-    /** Prepare all items relevant to the main transaction */
-    override fun createTxContext(): TxContext {
-        // Create the transaction components.
-        val notary = serviceHub.networkMapCache.notaryIdentities.single()
-        val state = YoContract.YoState(this.ourIdentity, target)
-        val requiredSigners = listOf(ourIdentity.owningKey, target.owningKey)
-        val command = Command(YoContract.Send(), requiredSigners)
-        // Create a transaction builder and add the components.
-        val txBuilder = SignersAwareTransactionBuilder(notary)
-        txBuilder.addCommand(command).addOutputState(state, YO_CONTRACT_ID)
-        return TxContext(txBuilder, txBuilder.participants())
+    override fun convertInput(): TxContext {
+        // Prepare a TX
+        val txBuilder = ParticipantsAwareTransactionBuilder(getFirstNotary())
+        txBuilder.addOutputState(YoContract.YoState(ourIdentity, target), YO_CONTRACT_ID)
+        txBuilder.addCommandFromData(YoContract.Send())
+        // Return a TX context with builder and participants
+        return TxContext(txBuilder, txBuilder.participants)
     }
 
 

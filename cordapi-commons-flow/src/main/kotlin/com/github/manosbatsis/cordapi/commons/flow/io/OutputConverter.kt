@@ -17,16 +17,10 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.call
+package com.github.manosbatsis.cordapi.commons.flow.io
 
-import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.base.BaseFlowLogic
+import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowConverterDelegate
 import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
 
-/** Used by flows as a `call` call to allow composition */
-interface CallDelegate {
-
-    /** Execute the delegate */
-    @Suspendable
-    fun <T : BaseFlowLogic<*>> execute(client: T, txContext: TxContext): TxContext
-}
+/** Converts the given [TxContext] to an instance of flow input of type `OUT`. */
+interface OutputConverter<OUT> : FlowConverterDelegate<TxContext, OUT>

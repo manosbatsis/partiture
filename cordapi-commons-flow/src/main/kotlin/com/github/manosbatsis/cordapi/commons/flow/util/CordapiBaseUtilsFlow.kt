@@ -17,12 +17,10 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.base
+package com.github.manosbatsis.cordapi.commons.flow.util
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.IdentitySyncFlow
-import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
@@ -35,7 +33,7 @@ import net.corda.core.transactions.WireTransaction
 /**
  * Base [FlowLogic] implementation, includes common utilities
  */
-abstract class BaseFlowLogic<out T> : FlowLogic<T>() {
+abstract class CordapiBaseUtilsFlow<out T> : FlowLogic<T>() {
 
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
@@ -43,21 +41,9 @@ abstract class BaseFlowLogic<out T> : FlowLogic<T>() {
             participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
                     .map { initiateFlow(toWellKnownParty(it)) }
 
-    /** Collect counter-party signatures. Override to use a custom flow for collecting those. */
-    @Suspendable
-    open fun gatherCounterPartySignatures(initialTx: SignedTransaction, sessions: Collection<FlowSession>): SignedTransaction {
-        return subFlow(CollectSignaturesFlow(initialTx, sessions, CollectSignaturesFlow.tracker()))
-    }
-
     @Suspendable
     fun performIdentitySync(sessions: List<FlowSession>, tx: WireTransaction) {
         sessions.forEach { subFlow(IdentitySyncFlow.Send(it, tx)) }
-    }
-
-    /** Finalize the transaction. Override to customize the finality flow. */
-    @Suspendable
-    open fun toFinalizedTransaction(signedTx: SignedTransaction, sessions: Collection<FlowSession>): SignedTransaction {
-        return subFlow(FinalityFlow(signedTx, sessions))
     }
 
     @Suspendable
@@ -72,7 +58,8 @@ abstract class BaseFlowLogic<out T> : FlowLogic<T>() {
     fun toWellKnownParty(abstractParty: AbstractParty): Party =
             abstractParty as? Party
                     ?: serviceHub.identityService.wellKnownPartyFromAnonymous(abstractParty)
-                    ?: throw RuntimeException("Could resolve to known party: ${abstractParty.nameOrNull()?:"unknown"}")
+                    ?: throw RuntimeException("Could resolve to known party: ${abstractParty.nameOrNull()
+                            ?: "unknown"}")
 
     /**
      * Resolve the given parties
@@ -104,14 +91,14 @@ abstract class BaseFlowLogic<out T> : FlowLogic<T>() {
      * Get the first notary matching the given organisation name if it exists
      * @return the first matching notary if any exists, `null` otherwise
      */
-    fun findNotaryByOrganisation(organisation: String) : Party? =
+    fun findNotaryByOrganisation(organisation: String): Party? =
             serviceHub.networkMapCache.notaryIdentities.firstOrNull { it.name.organisation == organisation }
 
     /**
      * Get the first notary matching the given organisation name
      * @throws [RuntimeException] if no matching notary is found
      */
-    fun getNotaryByOrganisation(organisation: String) : Party = findNotaryByOrganisation(organisation)
+    fun getNotaryByOrganisation(organisation: String): Party = findNotaryByOrganisation(organisation)
             ?: throw RuntimeException("No notaries found in network map cache for organisation $organisation")
 
     /** Filter out my identities from the given parties */
@@ -119,4 +106,12 @@ abstract class BaseFlowLogic<out T> : FlowLogic<T>() {
         return parties.exceptMe()
     }
 
+    /**
+     * Splits the original collection into pair of lists,
+     * where first list contains our identities and the second those of counter-parties.
+     */
+    fun toOursAndTheirs(parties: Collection<AbstractParty>): Pair<List<AbstractParty>, List<AbstractParty>> {
+        val myKeys = serviceHub.keyManagementService.keys
+        return parties.partition { myKeys.contains(it.owningKey) }
+    }
 }

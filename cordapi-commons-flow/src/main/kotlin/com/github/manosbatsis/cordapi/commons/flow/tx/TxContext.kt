@@ -42,28 +42,28 @@ data class TxContext(
         var others: MutableMap<String, SignedTransaction>? = null,
         /**  Additional metadata */
         var meta: MutableMap<String, Any>? = null
-){
-        /**
-         * Add a custom transaction result
-         * @return the previous value associated with the key, or `null` if the key was not present in the map.
-         */
-        fun addOther(key: String, tx: SignedTransaction): SignedTransaction? {
-                return if (this.others != null) this.others!!.put(key, tx)
-                else {
-                        this.others = mutableMapOf(key to tx)
-                        null
-                }
+) {
+    /**
+     * Add a custom transaction result
+     * @return the previous value associated with the key, or `null` if the key was not present in the map.
+     */
+    fun addOther(key: String, tx: SignedTransaction): SignedTransaction? {
+        return if (this.others != null) this.others!!.put(key, tx)
+        else {
+            this.others = mutableMapOf(key to tx)
+            null
         }
+    }
 
-        /**
-         * Add a custom metadatum
-         * @return the previous value associated with the key, or `null` if the key was not present in the map.
-         */
-        fun addMeta(key: String, value: Any): Any? {
-                return if (this.meta != null) this.meta!!.put(key, value)
-                else {
-                        this.meta = mutableMapOf(key to value)
-                        null
-                }
+    /**
+     * Add a custom metadatum
+     * @return the previous value associated with the key, or `null` if the key was not present in the map.
+     */
+    fun addMeta(key: String, value: Any): Any? {
+        return if (this.meta != null) this.meta!!.put(key, value)
+        else {
+            this.meta = mutableMapOf(key to value)
+            null
         }
+    }
 }

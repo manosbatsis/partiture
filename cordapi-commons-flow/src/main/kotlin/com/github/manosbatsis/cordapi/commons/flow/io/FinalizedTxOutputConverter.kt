@@ -17,20 +17,15 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow
+package com.github.manosbatsis.cordapi.commons.flow.io
 
-import com.github.manosbatsis.cordapi.commons.flow.call.CallDelegate
-import com.github.manosbatsis.cordapi.commons.flow.call.SimpleCallDelegate
+import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowDelegateBase
 import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
 import net.corda.core.transactions.SignedTransaction
 
-/** [CordapiFlow] that outputs the finalized transaction */
-abstract class CordapiFinTxFlow(
-        callDelegate: CallDelegate = SimpleCallDelegate()
-) : CordapiFlow<SignedTransaction>(callDelegate) {
-
-    /** Convert the given transaction context to the desired type for flow `out`. */
-    override fun toOut(txContext: TxContext): SignedTransaction {
-        return txContext.finalized!!
+/** Converts to the finalized transaction of the given [TxContext] by if available, throws an error otherwise. */
+class FinalizedTxOutputConverter : FlowDelegateBase(), OutputConverter<SignedTransaction> {
+    override fun convert(source: TxContext): SignedTransaction {
+        return source.finalized ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
     }
 }

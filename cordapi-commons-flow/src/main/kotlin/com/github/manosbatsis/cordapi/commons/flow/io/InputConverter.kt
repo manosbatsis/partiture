@@ -17,11 +17,10 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.input
+package com.github.manosbatsis.cordapi.commons.flow.io
 
+import com.github.manosbatsis.cordapi.commons.flow.delegate.FlowConverterDelegate
 import com.github.manosbatsis.cordapi.commons.flow.tx.TxContext
 
-/** Converts any [FlowInput] of type `T` to a [TxContext] instance */
-interface FlowInputConverter<T : FlowInput> {
-    fun convert(flowInput: T): TxContext
-}
+/** Converts flow input of type `IN` to a [TxContext] instance */
+interface InputConverter<IN> : FlowConverterDelegate<IN, TxContext>

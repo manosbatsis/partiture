@@ -17,24 +17,9 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.cordapi.commons.flow.call
+package com.github.manosbatsis.cordapi.commons.flow.delegate
 
-import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.cordapi.commons.flow.base.BaseFlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.WireTransaction
-
-/**
- * Simple call delegate implementation that also
- * performs an identity sync after obtaining counter-party sessions
- */
-class SyncIdCallDelegate : SimpleCallDelegate() {
-
-    @Suspendable
-    fun <T : BaseFlowLogic<*>> performIdentitySync(
-            client: T, sessions: List<FlowSession>, tx: WireTransaction
-    ) {
-        client.performIdentitySync(sessions, tx)
-    }
-
+/** Base flow converter delegate interface */
+interface FlowConverterDelegate<in IN, out OUT>: FlowDelegate {
+    fun convert(source: IN): OUT
 }

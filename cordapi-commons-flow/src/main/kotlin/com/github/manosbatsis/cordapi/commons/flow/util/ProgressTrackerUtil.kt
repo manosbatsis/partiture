@@ -27,9 +27,8 @@ import net.corda.core.utilities.ProgressTracker
 class ProgressTrackerUtil {
     companion object {
         object INITIALISE : ProgressTracker.Step("Initializing.")
-        object PROCESS_INPUT : ProgressTracker.Step("Processing input.")
+        object PROCESS_INPUT : ProgressTracker.Step("Processing io.")
         object PREPARE_TRANSACTION_DATA : ProgressTracker.Step("Preparing transaction data.")
-        object VERIFY_TRANSACTION_DATA : ProgressTracker.Step("Verifying transaction data.")
         object SIGN_INITIAL_TX : ProgressTracker.Step("Signing initial transaction.")
         object CREATE_SESSIONS : ProgressTracker.Step("Creating counter-party sessions.")
         object GATHER_SIGNATURES : ProgressTracker.Step("Collecting counter-party signatures.") {
@@ -40,8 +39,23 @@ class ProgressTrackerUtil {
             override fun childProgressTracker() = IdentitySyncFlow.Send.tracker()
         }
 
+        object VERIFY_TRANSACTION_DATA : ProgressTracker.Step("Verifying transaction data.")
         object FINALIZE : ProgressTracker.Step("Finalising transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
+
+        object PROCESS_OUTPUT : ProgressTracker.Step("Process and return output.")
+
+        fun defaultProgressTracker() = ProgressTracker(
+                INITIALISE,
+                PROCESS_INPUT,
+                PREPARE_TRANSACTION_DATA,
+                SIGN_INITIAL_TX,
+                CREATE_SESSIONS,
+                GATHER_SIGNATURES,
+                SYNC_IDENTITIES,
+                VERIFY_TRANSACTION_DATA,
+                FINALIZE,
+                PROCESS_OUTPUT)
     }
 }
