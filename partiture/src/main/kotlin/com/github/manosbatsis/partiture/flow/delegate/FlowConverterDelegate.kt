@@ -20,6 +20,6 @@
 package com.github.manosbatsis.partiture.flow.delegate
 
 /** Base flow converter delegate interface */
-interface FlowConverterDelegate<in IN, out OUT>: FlowDelegate {
+interface FlowConverterDelegate<in IN, out OUT> : FlowDelegate {
     fun convert(source: IN): OUT
 }

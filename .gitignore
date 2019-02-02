@@ -1,7 +1,6 @@
 .gradle
 /build/
 /logs/
-
 # Ignore Gradle GUI config
 gradle-app.setting
 
@@ -17,3 +16,4 @@ gradle-app.setting
 /buildSrc/.gradle/
 
 *.iml
+.idea

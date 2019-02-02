@@ -85,6 +85,7 @@ class YoFlow(val target: Party) : PartitureFlow<Party, SignedTransaction>(
         return fullySignedTx
     }*/
 }
+
 /**
  * A basic responder for countersigning and listening for finality
  */

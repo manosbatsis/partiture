@@ -26,6 +26,7 @@ import net.corda.core.transactions.SignedTransaction
 /** Converts to the finalized transaction of the given [TxContext] by if available, throws an error otherwise. */
 class FinalizedTxOutputConverter : FlowDelegateBase(), OutputConverter<SignedTransaction> {
     override fun convert(source: TxContext): SignedTransaction {
-        return source.finalized ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
+        return source.finalized
+                ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
     }
 }

@@ -50,7 +50,8 @@ abstract class PartitureFlow<IN, OUT>(
      * The default implementation requires a non-null [InputConverter] parameter
      * via the flow's constructor ; either provide one or override the method to convert manually.
      */
-    @Suspendable open fun convertInput(): TxContext {
+    @Suspendable
+    open fun convertInput(): TxContext {
         return convert(inputConverter, input, "Input")
     }
 
@@ -60,11 +61,13 @@ abstract class PartitureFlow<IN, OUT>(
      * The default implementation requires a non-null [OutputConverter] parameter
      * via the flow's constructor ; either provide one or override the method to convert manually.
      */
-    @Suspendable fun convertOutput(txContext: TxContext): OUT {
+    @Suspendable
+    fun convertOutput(txContext: TxContext): OUT {
         return convert(outputConverter, txContext, "Output")
     }
 
-    @Suspendable final override fun call(): OUT {
+    @Suspendable
+    final override fun call(): OUT {
         progressTracker.currentStep = ProgressTrackerUtil.Companion.INITIALISE
         // Delegate processing to txStrategy
         txStrategy.clientFlow = this
@@ -75,11 +78,10 @@ abstract class PartitureFlow<IN, OUT>(
     }
 
     private fun <I, O> convert(converter: FlowConverterDelegate<I, O>?, input: I, sourceName: String): O {
-        return if(converter != null) {
+        return if (converter != null) {
             converter.clientFlow = this
             converter.convert(input)
-        }
-        else throw NotImplementedError("This convert${sourceName}() implementation requires an ${sourceName}ConverterDelegate. " +
+        } else throw NotImplementedError("This convert${sourceName}() implementation requires an ${sourceName}ConverterDelegate. " +
                 "Either provide one in the flow's constructor or override the method to convert manually.")
     }
 }

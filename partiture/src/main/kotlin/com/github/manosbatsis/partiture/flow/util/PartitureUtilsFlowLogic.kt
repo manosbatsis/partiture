@@ -58,7 +58,8 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
     fun toWellKnownParty(abstractParty: AbstractParty): Party =
             abstractParty as? Party
                     ?: serviceHub.identityService.wellKnownPartyFromAnonymous(abstractParty)
-                    ?: throw RuntimeException("Could resolve to known party: ${abstractParty.nameOrNull()?:"unknown"}")
+                    ?: throw RuntimeException("Could resolve to known party: ${abstractParty.nameOrNull()
+                            ?: "unknown"}")
 
     /**
      * Resolve the given parties
@@ -97,14 +98,14 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      * Get the first notary matching the given organisation name if it exists
      * @return the first matching notary if any exists, `null` otherwise
      */
-    fun findNotaryByOrganisation(organisation: String) : Party? =
+    fun findNotaryByOrganisation(organisation: String): Party? =
             serviceHub.networkMapCache.notaryIdentities.firstOrNull { it.name.organisation == organisation }
 
     /**
      * Get the first notary matching the given organisation name
      * @throws [RuntimeException] if no matching notary is found
      */
-    fun getNotaryByOrganisation(organisation: String) : Party = findNotaryByOrganisation(organisation)
+    fun getNotaryByOrganisation(organisation: String): Party = findNotaryByOrganisation(organisation)
             ?: throw RuntimeException("No notaries found in network map cache for organisation $organisation")
 
     /** Filter out my identities from the given parties */
@@ -118,6 +119,6 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      */
     fun toOursAndTheirs(parties: Collection<AbstractParty>): Pair<List<AbstractParty>, List<AbstractParty>> {
         val myKeys = serviceHub.keyManagementService.keys
-        return parties.partition { myKeys.contains(it.owningKey)}
+        return parties.partition { myKeys.contains(it.owningKey) }
     }
 }

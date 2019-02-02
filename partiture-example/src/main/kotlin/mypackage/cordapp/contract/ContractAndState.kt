@@ -33,7 +33,7 @@ import javax.persistence.Table
 val YO_CONTRACT_PACKAGE = YoContract::class.java.`package`.name
 val YO_CONTRACT_ID = YoContract::class.java.canonicalName
 
-class YoContract: Contract {
+class YoContract : Contract {
 
     // Command.
     class Send : TypeOnlyCommandData()
