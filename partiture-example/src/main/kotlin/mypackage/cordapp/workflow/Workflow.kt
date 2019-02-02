@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.PartitureFlow
 import com.github.manosbatsis.partiture.flow.io.FinalizedTxOutputConverter
 import com.github.manosbatsis.partiture.flow.tx.ParticipantsAwareTransactionBuilder
-import com.github.manosbatsis.partiture.flow.tx.TxContext
+import com.github.manosbatsis.partiture.flow.call.TxContext
 import mypackage.cordapp.contract.YO_CONTRACT_ID
 import mypackage.cordapp.contract.YoContract
 import net.corda.core.contracts.requireThat

@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or

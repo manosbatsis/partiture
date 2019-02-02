@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@ package com.github.manosbatsis.partiture.flow.util
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.IdentitySyncFlow
+import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
@@ -29,6 +30,7 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
+import net.corda.core.utilities.ProgressTracker
 
 /**
  * Base [FlowLogic] implementation, includes common utilities
@@ -37,20 +39,29 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
-    fun toFlowSessions(participants: Iterable<AbstractParty>): List<FlowSession> =
+    fun createFlowSessions(participants: Iterable<AbstractParty>): List<FlowSession> =
             participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
                     .map { initiateFlow(toWellKnownParty(it)) }
 
+    /** Push our identities to the given counter-party sessions */
     @Suspendable
-    fun performIdentitySync(sessions: List<FlowSession>, tx: WireTransaction) {
+    fun pushOurIdentities(sessions: List<FlowSession>, tx: WireTransaction) {
         sessions.forEach { subFlow(IdentitySyncFlow.Send(it, tx)) }
     }
 
+    /** Perform initial signing to the given mutable transaction */
     @Suspendable
     fun signInitialTransaction(transactionBuilder: TransactionBuilder): SignedTransaction? {
         return serviceHub.signInitialTransaction(transactionBuilder)
     }
 
+    /** Finalize the given transaction */
+    @Suspendable
+    fun finalizeTransaction(
+            tx: SignedTransaction, sessions: List<FlowSession>, tracker: ProgressTracker
+    ): SignedTransaction {
+        return subFlow(CollectSignaturesFlow(tx, sessions, tracker))
+    }
     /**
      * Resolve to a known party if [AnonymousParty], return as-is (i.e. [Party]) otherwise
      * @throws [RuntimeException] if an anonymous party cannot be resolved
@@ -117,7 +128,9 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      * Splits the original collection into pair of lists,
      * where first list contains our identities and the second those of counter-parties.
      */
-    fun toOursAndTheirs(parties: Collection<AbstractParty>): Pair<List<AbstractParty>, List<AbstractParty>> {
+    fun partitionOursAndTheirs(
+            parties: Collection<AbstractParty>
+    ): Pair<List<AbstractParty>, List<AbstractParty>> {
         val myKeys = serviceHub.keyManagementService.keys
         return parties.partition { myKeys.contains(it.owningKey) }
     }

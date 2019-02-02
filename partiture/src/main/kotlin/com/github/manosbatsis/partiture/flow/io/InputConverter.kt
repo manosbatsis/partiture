@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@
 package com.github.manosbatsis.partiture.flow.io
 
 import com.github.manosbatsis.partiture.flow.delegate.FlowConverterDelegate
-import com.github.manosbatsis.partiture.flow.tx.TxContext
+import com.github.manosbatsis.partiture.flow.call.TxContext
 
 /** Converts flow input of type `IN` to a [TxContext] instance */
 interface InputConverter<IN> : FlowConverterDelegate<IN, TxContext>

@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or
@@ -23,9 +23,9 @@ import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.delegate.FlowConverterDelegate
 import com.github.manosbatsis.partiture.flow.io.InputConverter
 import com.github.manosbatsis.partiture.flow.io.OutputConverter
-import com.github.manosbatsis.partiture.flow.tx.DefaultTxStrategy
-import com.github.manosbatsis.partiture.flow.tx.TxContext
-import com.github.manosbatsis.partiture.flow.tx.TxStrategy
+import com.github.manosbatsis.partiture.flow.call.SimpleCallStrategy
+import com.github.manosbatsis.partiture.flow.call.TxContext
+import com.github.manosbatsis.partiture.flow.call.TxStrategy
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
 import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil
 import net.corda.core.flows.FlowLogic
@@ -35,7 +35,7 @@ import net.corda.core.flows.FlowLogic
  */
 abstract class PartitureFlow<IN, OUT>(
         val input: IN,
-        val txStrategy: TxStrategy = DefaultTxStrategy(),
+        val txStrategy: TxStrategy = SimpleCallStrategy(),
         val inputConverter: InputConverter<IN>? = null,
         val outputConverter: OutputConverter<OUT>? = null
 ) : PartitureUtilsFlowLogic<OUT>() {

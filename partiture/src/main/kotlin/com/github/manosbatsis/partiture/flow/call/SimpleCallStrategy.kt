@@ -1,5 +1,5 @@
 /*
- *     Cordapi: Common components for Cordapps
+ *     Partiture: a compact component framework for your Corda apps
  *     Copyright (C) 2018 Manos Batsis
  *
  *     This library is free software; you can redistribute it and/or
@@ -17,19 +17,28 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.tx
+package com.github.manosbatsis.partiture.flow.call
 
 import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.delegate.FlowDelegateBase
 import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil
 import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AnonymousParty
 import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion as Steps
 
-/** Default call txStrategy implementation */
-open class DefaultTxStrategy : FlowDelegateBase(), TxStrategy {
+/**
+ * The default call strategy implementation will:
+ *
+ * - Call the client's flow's `convertInput` to process the flow input and initialize the call context
+ * - Sign an initial transaction
+ * - Create flow sessions for counter-parties, if any exist
+ * - Perform an identity sync if any own anonymous parties are participating in the input/output states of the call context
+ * - Gather counter-party signatures
+ * - Verify the original transaction builder
+ * - Finalize the transaction
+ */
+open class SimpleCallStrategy : FlowDelegateBase(), TxStrategy {
 
     override val progressTracker = ProgressTrackerUtil.defaultProgressTracker()
 
@@ -39,32 +48,33 @@ open class DefaultTxStrategy : FlowDelegateBase(), TxStrategy {
         // Perform initial transaction signature
         txContext.initial = clientFlow.signInitialTransaction(txContext.transactionBuilder)
         // Get our own and counter-parties
-        val (ourIdentities, counterParties) = clientFlow.toOursAndTheirs(txContext.participants)
+        val (ourParties, counterParties) =
+                clientFlow.partitionOursAndTheirs(txContext.participants)
         // Counter-sign and sync
-        var sessions: List<FlowSession>? = null
+        var sessions: List<FlowSession> = listOf()
         if (counterParties.isNotEmpty()) {
             // Create counter-party sessions
             clientFlow.progressTracker.currentStep = Steps.CREATE_SESSIONS
-            sessions = clientFlow.toFlowSessions(counterParties)
+            sessions = clientFlow.createFlowSessions(counterParties)
 
-            // Perform an ID sync, if any of our parties is anonymous
-            if (ourIdentities.any { it is AnonymousParty }) {
+            // Perform an ID sync if any of our own participating parties is anonymous
+            if (ourParties.any { it is AnonymousParty }) {
                 clientFlow.progressTracker.currentStep = Steps.SYNC_IDENTITIES
-                clientFlow.performIdentitySync(sessions, txContext.initial!!.tx)
+                clientFlow.pushOurIdentities(sessions, txContext.initial!!.tx)
             }
             // Retrieve counter-party signatures
             clientFlow.progressTracker.currentStep = Steps.GATHER_SIGNATURES
             txContext.counterSigned = clientFlow.subFlow(
-                    CollectSignaturesFlow(txContext.initial!!, sessions, Steps.GATHER_SIGNATURES.childProgressTracker()))
+                    CollectSignaturesFlow(
+                            txContext.initial!!, sessions, Steps.GATHER_SIGNATURES.childProgressTracker()))
         }
         // Verify TX builder state
         clientFlow.progressTracker.currentStep = Steps.VERIFY_TRANSACTION_DATA
         txContext.transactionBuilder.verify(clientFlow.serviceHub)
         // Finalize
         clientFlow.progressTracker.currentStep = Steps.FINALIZE
-        txContext.finalized = if (sessions != null) clientFlow.subFlow(
-                FinalityFlow(txContext.counterSigned!!, sessions, Steps.FINALIZE.childProgressTracker()))
-        else clientFlow.subFlow(FinalityFlow(txContext.initial!!, Steps.FINALIZE.childProgressTracker()))
+        txContext.finalized = clientFlow.finalizeTransaction(
+                txContext.counterSigned!!, sessions, Steps.FINALIZE.childProgressTracker())
 
         return txContext
     }
