@@ -17,12 +17,12 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.delegate
+package com.github.manosbatsis.partiture.flow.delegate.initiating
 
 import com.github.manosbatsis.partiture.flow.PartitureFlow
 
 /** Base flow delegate implementation */
-abstract class FlowDelegateBase : FlowDelegate {
+abstract class PartitureFlowDelegateBase : PartitureFlowDelegate {
     /** The client flow using this delegate, must be set by the same flow before use */
     override lateinit var clientFlow: PartitureFlow<*, *>
 }

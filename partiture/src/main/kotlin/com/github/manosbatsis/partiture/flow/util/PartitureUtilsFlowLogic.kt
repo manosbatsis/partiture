@@ -21,7 +21,7 @@ package com.github.manosbatsis.partiture.flow.util
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.IdentitySyncFlow
-import net.corda.core.flows.CollectSignaturesFlow
+import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
@@ -39,14 +39,15 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
-    fun createFlowSessions(participants: Iterable<AbstractParty>): List<FlowSession> =
+    fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> =
             participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
-                    .map { initiateFlow(toWellKnownParty(it)) }
+                    .map { initiateFlow(toWellKnownParty(it)) }.toSet()
 
     /** Push our identities to the given counter-party sessions */
     @Suspendable
-    fun pushOurIdentities(sessions: List<FlowSession>, tx: WireTransaction) {
-        sessions.forEach { subFlow(IdentitySyncFlow.Send(it, tx)) }
+    fun pushOurIdentities(sessions: Set<FlowSession>, tx: WireTransaction, progressTracker: ProgressTracker) {
+        subFlow(IdentitySyncFlow.Send(sessions, tx, progressTracker))
+
     }
 
     /** Perform initial signing to the given mutable transaction */
@@ -58,10 +59,11 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
     /** Finalize the given transaction */
     @Suspendable
     fun finalizeTransaction(
-            tx: SignedTransaction, sessions: List<FlowSession>, tracker: ProgressTracker
+            tx: SignedTransaction, sessions: Set<FlowSession>, tracker: ProgressTracker
     ): SignedTransaction {
-        return subFlow(CollectSignaturesFlow(tx, sessions, tracker))
+        return subFlow(FinalityFlow(tx, sessions, tracker))
     }
+
     /**
      * Resolve to a known party if [AnonymousParty], return as-is (i.e. [Party]) otherwise
      * @throws [RuntimeException] if an anonymous party cannot be resolved
@@ -80,7 +82,7 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
             parties.map { toWellKnownParty(it) }
 
     /** Filter out self from said parties */
-    private fun Iterable<AbstractParty>.exceptMe(): List<AbstractParty> {
+    fun Iterable<AbstractParty>.exceptMe(): List<AbstractParty> {
         val myKeys = serviceHub.keyManagementService.keys
         return this.filter { !myKeys.contains(it.owningKey) }
     }

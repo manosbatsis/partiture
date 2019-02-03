@@ -17,10 +17,25 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.call
 
-import com.github.manosbatsis.partiture.flow.call.CallContext
-import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
+/**
+ * Contains information for each (finalized) transaction relevant to the current FlowLogic call.
+ */
+data class CallContext(
+        /**
+         * The entries of this context, each with the info necessary
+         * to create a (finalized) transaction.
+         */
+        val entries: MutableList<CallContextEntry> = mutableListOf(),
+        /**  Additional (top-level) metadata */
+        override var meta: MutableMap<String, Any>? = null
+) : CallMetadata() {
+    constructor(entry: CallContextEntry) : this() {
+        this.entries.add(entry)
+    }
 
-/** Converts flow input of type `IN` to a [CallContext] instance */
-interface InputConverter<IN> : PartitureFlowConverterDelegate<IN, CallContext>
+    constructor(entries: Iterable<CallContextEntry>) : this() {
+        this.entries.addAll(entries)
+    }
+}

@@ -17,10 +17,30 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.call
 
-import com.github.manosbatsis.partiture.flow.call.CallContext
-import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
+/** Abstract metadata implementation. */
+abstract class CallMetadata {
+    /**  Additional (top-level) metadata */
+    protected abstract var meta: MutableMap<String, Any>?
 
-/** Converts flow input of type `IN` to a [CallContext] instance */
-interface InputConverter<IN> : PartitureFlowConverterDelegate<IN, CallContext>
+    /**
+     * Add a custom metadatum
+     * @return the previous value associated with the key, or `null` if the key was not present in the map.
+     */
+    fun addMeta(key: String, value: Any): Any? {
+        return if (this.meta != null) this.meta!!.put(key, value)
+        else {
+            this.meta = mutableMapOf(key to value)
+            null
+        }
+    }
+
+    /**
+     * Get the custom metadatum value matching the given key
+     * @return the value associated with the key if one exists, `null` otherwise
+     */
+    fun getMeta(key: String): Any? {
+        return this.meta?.get(key)
+    }
+}

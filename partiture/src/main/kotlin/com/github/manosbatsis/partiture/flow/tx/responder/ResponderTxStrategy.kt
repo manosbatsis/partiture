@@ -17,24 +17,23 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.call
+package com.github.manosbatsis.partiture.flow.tx.responder
 
 import co.paralleluniverse.fibers.Suspendable
-import com.github.manosbatsis.partiture.flow.delegate.FlowDelegate
-import net.corda.core.utilities.ProgressTracker
+import com.github.manosbatsis.partiture.flow.PartitureResponderFlow
+import com.github.manosbatsis.partiture.flow.delegate.responder.PartitureResponderFlowDelegate
+import net.corda.core.flows.SignTransactionFlow
 
-/** Transaction strategy delegate. */
-interface TxStrategy : FlowDelegate {
+/** Responder flow delegate. */
+interface ResponderTxStrategy : PartitureResponderFlowDelegate {
 
-    /**
-     * Provide the appropriate ProgressTracker to the calling flow.
-     * Must start/end with [com.github.manosbatsis.partiture.commons.flow.util.ProgressTrackerUtil.Companion.INITIALISE]
-     * and [com.github.manosbatsis.partiture.commons.flow.util.ProgressTrackerUtil.Companion.PROCESS_OUTPUT]
-     * respectively, as those steps are set by the calling flow.
-     */
-    abstract val progressTracker: ProgressTracker
+    /** Convenient chain method */
+    fun setClientFlow(clientFlow: PartitureResponderFlow): ResponderTxStrategy {
+        this.clientFlow = clientFlow;
+        return this
+    }
 
-    /** Execute the delegate */
+    /** Create a [SignTransactionFlow] with the appropriate verification checks. */
     @Suspendable
-    abstract fun execute(txContext: TxContext): TxContext
+    fun createSignTransactionFlow(): SignTransactionFlow
 }

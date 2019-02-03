@@ -30,7 +30,6 @@ import net.corda.core.node.services.vault.QueryCriteria
 /** Vault access helper for linear contract states */
 class LinearStateVaultHelper<T : LinearState>(val vaultService: VaultService, val stateType: Class<out T>) {
 
-    // TODO: add multiple state types constructor
     /** Lazy reusable set of the single state type used in vault queries etc. */
     val contractStateTypes by lazy { setOf(stateType) }
 

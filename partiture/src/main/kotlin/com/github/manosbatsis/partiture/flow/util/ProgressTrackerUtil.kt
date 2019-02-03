@@ -24,38 +24,49 @@ import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.utilities.ProgressTracker
 
+/**
+ * Declares the default progress tracker steps
+ * and a method to obtain a [ProgressTracker] containing them.
+ */
 class ProgressTrackerUtil {
     companion object {
-        object INITIALISE : ProgressTracker.Step("Initializing.")
-        object PROCESS_INPUT : ProgressTracker.Step("Processing io.")
-        object PREPARE_TRANSACTION_DATA : ProgressTracker.Step("Preparing transaction data.")
+        object INITIALIZE : ProgressTracker.Step("Initializing.")
+        object PROCESS_INPUT : ProgressTracker.Step("Processing input.")
+        object POST_PROCESS_INPUT : ProgressTracker.Step("Input post-processing.")
+        object EXECUTE_TRANSACTIONS : ProgressTracker.Step("Executing transactions.")
         object SIGN_INITIAL_TX : ProgressTracker.Step("Signing initial transaction.")
         object CREATE_SESSIONS : ProgressTracker.Step("Creating counter-party sessions.")
-        object GATHER_SIGNATURES : ProgressTracker.Step("Collecting counter-party signatures.") {
-            override fun childProgressTracker() = CollectSignaturesFlow.tracker()
-        }
-
         object SYNC_IDENTITIES : ProgressTracker.Step("Syncing identities.") {
             override fun childProgressTracker() = IdentitySyncFlow.Send.tracker()
         }
 
+        object GATHER_SIGNATURES : ProgressTracker.Step("Collecting counter-party signatures.") {
+            override fun childProgressTracker() = CollectSignaturesFlow.tracker()
+        }
+
+        object VERIFY_SIGNATURES : ProgressTracker.Step("Verify the transaction's signatures.")
         object VERIFY_TRANSACTION_DATA : ProgressTracker.Step("Verifying transaction data.")
         object FINALIZE : ProgressTracker.Step("Finalising transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
 
-        object PROCESS_OUTPUT : ProgressTracker.Step("Process and return output.")
+        object POST_EXECUTE_TRANSACTIONS : ProgressTracker.Step("Perform transactions post-processing.")
+        object PROCESS_OUTPUT : ProgressTracker.Step("Process output.")
 
+        /** Create a [ProgressTracker] with the default steps */
         fun defaultProgressTracker() = ProgressTracker(
-                INITIALISE,
+                INITIALIZE,
                 PROCESS_INPUT,
-                PREPARE_TRANSACTION_DATA,
+                POST_PROCESS_INPUT,
+                EXECUTE_TRANSACTIONS,
                 SIGN_INITIAL_TX,
                 CREATE_SESSIONS,
-                GATHER_SIGNATURES,
                 SYNC_IDENTITIES,
+                GATHER_SIGNATURES,
+                VERIFY_SIGNATURES,
                 VERIFY_TRANSACTION_DATA,
                 FINALIZE,
+                POST_EXECUTE_TRANSACTIONS,
                 PROCESS_OUTPUT)
     }
 }

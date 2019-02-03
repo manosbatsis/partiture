@@ -17,10 +17,12 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.delegate.responder
 
-import com.github.manosbatsis.partiture.flow.call.CallContext
-import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
+import com.github.manosbatsis.partiture.flow.PartitureResponderFlow
 
-/** Converts flow input of type `IN` to a [CallContext] instance */
-interface InputConverter<IN> : PartitureFlowConverterDelegate<IN, CallContext>
+/** Base responder flow delegate implementation */
+abstract class PartitureResponderFlowDelegateBase : PartitureResponderFlowDelegate {
+    /** The client flow using this delegate, must be set by the same flow before use */
+    override lateinit var clientFlow: PartitureResponderFlow
+}

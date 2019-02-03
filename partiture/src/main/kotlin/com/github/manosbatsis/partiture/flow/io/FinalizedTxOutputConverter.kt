@@ -19,14 +19,18 @@
  */
 package com.github.manosbatsis.partiture.flow.io
 
-import com.github.manosbatsis.partiture.flow.delegate.FlowDelegateBase
-import com.github.manosbatsis.partiture.flow.call.TxContext
+import com.github.manosbatsis.partiture.flow.call.CallContext
+import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import net.corda.core.transactions.SignedTransaction
 
-/** Converts to the finalized transaction of the given [TxContext] by if available, throws an error otherwise. */
-class FinalizedTxOutputConverter : FlowDelegateBase(), OutputConverter<SignedTransaction> {
-    override fun convert(source: TxContext): SignedTransaction {
-        return source.finalized
-                ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
+/**
+ * Converts to the finalized transactions of (each entry in) the given [CallContext] if available,
+ * throws an error otherwise.
+ */
+class FinalizedTxOutputConverter : PartitureFlowDelegateBase(), OutputConverter<List<SignedTransaction>> {
+    override fun convert(input: CallContext): List<SignedTransaction> {
+        return input.entries.map {
+            it.finalized ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
+        }
     }
 }

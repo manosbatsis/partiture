@@ -19,8 +19,11 @@
  */
 package com.github.manosbatsis.partiture.flow.io
 
-import com.github.manosbatsis.partiture.flow.delegate.FlowConverterDelegate
-import com.github.manosbatsis.partiture.flow.call.TxContext
+import com.github.manosbatsis.partiture.flow.call.CallContext
+import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
 
-/** Converts the given [TxContext] to an instance of flow input of type `OUT`. */
-interface OutputConverter<OUT> : FlowConverterDelegate<TxContext, OUT>
+/**
+ * Converts the client flow's [CallContext] to an instance of `OUT`
+ * the flow can then return from it's `call` method.
+ */
+interface OutputConverter<OUT> : PartitureFlowConverterDelegate<CallContext, OUT>

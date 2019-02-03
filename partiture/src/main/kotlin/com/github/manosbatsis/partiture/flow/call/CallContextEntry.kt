@@ -24,10 +24,10 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 /**
- * The transaction context of the current FlowLogic call
- * Stores transaction builder, participants, results and metadata
+ * Contains te items relevant to a single transaction for the current FlowLogic call.
+ * Includes a transaction builder, participants, results, metadata and so on.
  */
-data class TxContext(
+data class CallContextEntry(
         /** A fully initialized TransactionBuilder instance */
         val transactionBuilder: TransactionBuilder,
         /** The participants for this transaction */
@@ -40,9 +40,9 @@ data class TxContext(
         var finalized: SignedTransaction? = null,
         /**  Other custom transactions by key */
         var others: MutableMap<String, SignedTransaction>? = null,
-        /**  Additional metadata */
-        var meta: MutableMap<String, Any>? = null
-) {
+        /**  Additional metadata for this entry */
+        override var meta: MutableMap<String, Any>? = null
+) : CallMetadata() {
     /**
      * Add a custom transaction result
      * @return the previous value associated with the key, or `null` if the key was not present in the map.
@@ -51,18 +51,6 @@ data class TxContext(
         return if (this.others != null) this.others!!.put(key, tx)
         else {
             this.others = mutableMapOf(key to tx)
-            null
-        }
-    }
-
-    /**
-     * Add a custom metadatum
-     * @return the previous value associated with the key, or `null` if the key was not present in the map.
-     */
-    fun addMeta(key: String, value: Any): Any? {
-        return if (this.meta != null) this.meta!!.put(key, value)
-        else {
-            this.meta = mutableMapOf(key to value)
             null
         }
     }

@@ -17,12 +17,21 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.delegate
+package com.github.manosbatsis.partiture.flow.delegate.initiating
 
+import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.PartitureFlow
 
-/** Base flow delegate interface */
-interface FlowDelegate {
-    /** The client flow using this delegate */
-    var clientFlow: PartitureFlow<*, *>
+/** Base flow converter delegate interface */
+interface PartitureFlowConverterDelegate<in IN, out OUT> : PartitureFlowDelegate {
+
+    /** Convenient chain method */
+    fun setClientFlow(clientFlow: PartitureFlow<*, *>): PartitureFlowConverterDelegate<IN, OUT> {
+        this.clientFlow = clientFlow;
+        return this
+    }
+
+    /** Perform the actual conversion from `IN` to `OUT` */
+    @Suspendable
+    fun convert(input: IN): OUT
 }
