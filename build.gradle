@@ -56,7 +56,7 @@ allprojects {
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.1"
+    version = "0.2-SNAPSHOT"
 
     apply from: "$rootDir/gradle/published.gradle"
     apply plugin: 'project-report'
