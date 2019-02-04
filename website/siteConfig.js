@@ -24,7 +24,7 @@ const siteConfig = {
   title: 'Partiture', // Title for your website.
   tagline: 'A compact component framework for your Corda apps.',
   url: 'https://manosbatsis.github.io', // Your website URL
-  baseUrl: '/partiture', // Base URL for your project */
+  baseUrl: '/partiture/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
   //   url: 'https://facebook.github.io',
   //   baseUrl: '/test-site/',

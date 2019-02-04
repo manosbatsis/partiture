@@ -10,6 +10,19 @@ strategies provided to them.
 Implementations of `TxStrategy` also provide a `ProgressTracker` to their client flow.
 
 
+## Applying a Strategy
+
+```kotlin
+class MyFlow(
+	input: Whatever
+) : PartitureFlow<Whatever, Whatnot>(
+	input: input,
+	// Apply the super duper strategy!
+	txStrategy = MySuperDuperTxStrategy()
+	// add converters etc.
+)
+```
+
 ## Default Strategy
 
 `SimpleTxStrategy` is the default/fallback implementation i.e. value of 

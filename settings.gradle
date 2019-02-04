@@ -1,4 +1,5 @@
 rootProject.name = "partiture-parent"
-include("partiture-example",
-        "partiture",
-        "partiture-test")
+include("partiture",
+        "partiture-test",
+		"partiture-example-contract",
+		"partiture-example-workflow")

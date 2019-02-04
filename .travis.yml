@@ -1,0 +1,15 @@
+language: java
+
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+jdk:
+  - oraclejdk8
+
+before_install:
+  - chmod +x gradlew
+
+install: echo "skip 'gradle assemble' step"
+script: travis_wait ./gradlew build --console=plain
+after_failure: cat /home/travis/build/manosbatsis/partiture/build/reports/tests/test/index.html

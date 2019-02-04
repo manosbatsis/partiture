@@ -34,7 +34,7 @@ import net.corda.core.utilities.ProgressTracker
 /**
  * Base initiating [FlowLogic] implementation for flow composition
  */
-abstract class PartitureFlow<IN, OUT>(
+open class PartitureFlow<IN, OUT>(
         val input: IN,
         val txStrategy: TxStrategy = SimpleTxStrategy(),
         val inputConverter: InputConverter<IN>? = null,

@@ -29,6 +29,7 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Table
 
+
 // Contract and state.
 val YO_CONTRACT_PACKAGE = YoContract::class.java.`package`.name
 val YO_CONTRACT_ID = YoContract::class.java.canonicalName
@@ -50,6 +51,7 @@ class YoContract : Contract {
     }
 
     // State.
+    @BelongsToContract(YoContract::class)
     data class YoState(val origin: Party,
                        val target: Party,
                        val yo: String = "Yo!") : ContractState, QueryableState {

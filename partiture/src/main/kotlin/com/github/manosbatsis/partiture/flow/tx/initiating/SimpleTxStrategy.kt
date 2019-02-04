@@ -42,11 +42,14 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
 
     /** Provides an instance pre-configured with the default progress steps */
     override val progressTracker = SimpleInitiatingLifecycle.progressTracker()
-
+    @Suspendable
+    override fun execute() {
+        clientFlow.callContext.entries.forEach { executeFor(it) }
+    }
     @Suspendable
     @Suppress("UNUSED_VALUE")
     override fun executeFor(ccEntry: CallContextEntry) {
-        var currentStep = step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
+        step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
         // Perform initial transaction signature
         ccEntry.initial = clientFlow
                 .signInitialTransaction(ccEntry.transactionBuilder)
@@ -57,28 +60,28 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         var sessions: Set<FlowSession> = setOf()
         if (counterParties.isNotEmpty()) {
             // Create counter-party sessions
-            currentStep = step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
+            step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
             sessions = clientFlow.createFlowSessions(counterParties)
             // Perform an ID sync if any of our own participating parties is anonymous
             if (ourParties.any { it is AnonymousParty }) {
-                currentStep = step(SimpleInitiatingLifecycle.SYNC_IDENTITIES)
+                val currentStep = step(SimpleInitiatingLifecycle.SYNC_IDENTITIES)
                 clientFlow.pushOurIdentities(
                         sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
             }
             // Retrieve counter-party signatures
-            currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
+            val currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
             val counterSigned = clientFlow.subFlow(CollectSignaturesFlow(
                     ccEntry.initial!!, sessions, currentStep.childProgressTracker()!!))
-            currentStep = step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
+            step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
             counterSigned.verifyRequiredSignatures()
             ccEntry.counterSigned = counterSigned
         }
         // Verify TX builder state
         @Suppress("UNUSED_VALUE")
-        currentStep = step(SimpleInitiatingLifecycle.VERIFY_TRANSACTION_DATA)
+        step(SimpleInitiatingLifecycle.VERIFY_TRANSACTION_DATA)
         ccEntry.transactionBuilder.verify(clientFlow.serviceHub)
         // Finalize
-        currentStep = step(SimpleInitiatingLifecycle.FINALIZE)
+        val currentStep = step(SimpleInitiatingLifecycle.FINALIZE)
         ccEntry.finalized = clientFlow.finalizeTransaction(
                 ccEntry.counterSigned!!, sessions,
                 currentStep.childProgressTracker()!!)

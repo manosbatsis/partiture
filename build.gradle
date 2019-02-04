@@ -36,7 +36,6 @@ plugins {
     id "com.github.hierynomus.license" version "0.14.0"
 }
 
-apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'io.codearte.nexus-staging'
 nexusStaging {
     packageGroup = 'com.github.manosbatsis.partiture'
@@ -64,32 +63,7 @@ allprojects {
 subprojects {
     apply plugin: 'license'
     apply plugin: 'kotlin'
-    dokka {
-        outputFormat = 'javadoc'
-        outputDirectory = javadoc.destinationDir
-        //inputs.dir 'src/main/kotlin'
-        linkMapping {
-            dir = "src/main/kotlin"
-            url = "https://github.com/manosbatsis/corbeans/tree/master/${project.name}/src/main/kotlin"
-            suffix = "#L"
-        }
-    }
 
-    task javadocJar(type: Jar, dependsOn: dokka) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-// and hook them up into the artifacts collection together
-// with the project jar itself when publishing
-    artifacts {
-        archives javadocJar, sourcesJar
-    }
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         kotlinOptions {
             languageVersion = "1.2"
@@ -151,35 +125,4 @@ subprojects {
         }
         strictCheck true
     }
-}
-
-configurations {
-    dokkapath
-    dokkapath.description = "dokka project classpath"
-}
-
-dependencies {
-    dokkapath fileTree (include: ['*.jar'])
-}
-
-task dokka (type: org.jetbrains.dokka.gradle.DokkaTask, overwrite: true) {
-    moduleName = "$rootProject.name"
-    outputDirectory = "$buildDir/dokka"
-    outputFormat = "html"
-    processConfigurations = []
-
-    sourceDirs = files(subprojects.collect {
-        p ->
-
-            def path = new File(p.projectDir, "/src/main/kotlin")
-
-            def relativePath = rootDir.toPath().relativize(path.toPath()).toString()
-            linkMapping {
-                dir = path
-                url = "https://....../blob/master/$relativePath"
-                suffix = "#L"
-            }
-
-            return path
-    })
 }
