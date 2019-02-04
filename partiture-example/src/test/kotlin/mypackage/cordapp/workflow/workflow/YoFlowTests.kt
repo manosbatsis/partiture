@@ -84,13 +84,13 @@ class YoFlowTests {
         val recepients = listOf(bId, cId)
         // test flow
         val flow = YoFlow(recepients)
-        checkFlow(flow, yo1, yo2)
+        checkFlow(flow)
         // Check yo states are stored in the vault.
         checkVaultStorage(b, yo1)
         checkVaultStorage(c, yo2)
     }
 
-    private fun checkFlow(flow: PartitureFlow<*, List<SignedTransaction>>, yo1: YoContract.YoState, yo2: YoContract.YoState) {
+    private fun checkFlow(flow: PartitureFlow<*, List<SignedTransaction>>) {
         val future = a.startFlow(flow)
         network.runNetwork()
         val stx = future.getOrThrow()

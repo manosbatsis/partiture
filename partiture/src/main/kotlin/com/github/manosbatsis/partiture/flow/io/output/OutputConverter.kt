@@ -17,16 +17,13 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.io.output
 
 import com.github.manosbatsis.partiture.flow.call.CallContext
-import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
-import net.corda.core.transactions.SignedTransaction
+import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
 
-/** Converts to the finalized transaction of the single [CallContext] entry if available, throws an error otherwise. */
-class SingleFinalizedTxOutputConverter : PartitureFlowDelegateBase(), OutputConverter<SignedTransaction> {
-    override fun convert(input: CallContext): SignedTransaction {
-        return input.entries.single().finalized
-                ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
-    }
-}
+/**
+ * Converts the client flow's [CallContext] to an instance of `OUT`
+ * the flow can then return from it's `call` method.
+ */
+interface OutputConverter<OUT> : PartitureFlowConverterDelegate<CallContext, OUT>

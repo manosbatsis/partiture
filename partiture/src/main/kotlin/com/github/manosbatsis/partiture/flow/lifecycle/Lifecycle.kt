@@ -17,20 +17,12 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.lifecycle
 
-import com.github.manosbatsis.partiture.flow.call.CallContext
-import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
-import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 
-/**
- * Converts to the finalized transactions of (each entry in) the given [CallContext] if available,
- * throws an error otherwise.
- */
-class FinalizedTxOutputConverter : PartitureFlowDelegateBase(), OutputConverter<List<SignedTransaction>> {
-    override fun convert(input: CallContext): List<SignedTransaction> {
-        return input.entries.map {
-            it.finalized ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
-        }
-    }
+/** Interface for reusable [ProgressTracker] providers */
+interface Lifecycle {
+    /** Create a [ProgressTracker] with the default steps */
+    fun progressTracker(): ProgressTracker
 }

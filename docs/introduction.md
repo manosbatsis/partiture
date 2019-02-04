@@ -1,15 +1,19 @@
-# Partiture
+---
+id: introduction
+title: Introduction
+---
 
 Partiture is a compact component framework for your Corda apps.
+For the time being, it's primary goal is flow composition. 
 
-## Documentation
+## Installation
 
-See https://manosbatsis.github.io/partiture
+```groovy
+cordaCompile "com.github.manosbatsis.partiture:partiture:0.1"
+```
 
+## Example Flows
 
-## What Does It Do?
-
-For the time being, Partiture's primary goal is flow composition. 
 The following sections demonstrate simple examples of initiating and 
 responding flows.
 
@@ -31,9 +35,9 @@ class YoFlow(input: List<Party>) : PartitureFlow<List<Party>, List<SignedTransac
         // do stuff...
     }
     /** Override to manually create the flow's OUT instance */
-	override fun processOutput(): List<SignedTransaction> {
-		// do stuff...
-	}
+    override fun processOutput(): List<SignedTransaction> {
+        // do stuff...
+    }
 }
 ```
 
@@ -46,8 +50,8 @@ thus reducing the flow to a declaration-only class that binds everything togethe
 @InitiatingFlow
 @StartableByRPC
 class YoFlow(input: List<Party>) : PartitureFlow<List<Party>, List<SignedTransaction>>(
-		// Can be any type, just match with PartitureFlow's IN generic argument above
-		input = input, 
+        // Can be any type, just match with PartitureFlow's IN generic argument above
+        input = input, 
         inputConverter = YoInputConverter(),// Our custom IN converter
         outputConverter = FinalizedTxOutputConverter()) // build-in converter matching OUT
 // No implementation needed!   
@@ -84,15 +88,4 @@ class YoFlowResponder(
 The above responder flow will verify the transaction 
 and ensure all output states are instances of `YoState` before signing.
 
-## Partiture Components
-
-Partiture provides a number of build-in components: 
-input/output converters, TX strategies, responder strategies, flow utilities 
-and so on. 
-
-However, it's main feature is the conventions and ease with which you can develop and 
-reuse components specifically for your application requirements - see the 
-[documentation](https://manosbatsis.github.io/partiture) for more details.
-
- 
  

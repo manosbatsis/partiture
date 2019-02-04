@@ -17,7 +17,7 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package com.github.manosbatsis.partiture.flow.io
+package com.github.manosbatsis.partiture.flow.io.input
 
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate

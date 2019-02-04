@@ -17,3 +17,5 @@ gradle-app.setting
 
 *.iml
 .idea
+/website/node_modules/
+/website/yarn.lock

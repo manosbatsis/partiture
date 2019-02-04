@@ -22,11 +22,10 @@ package com.github.manosbatsis.partiture.flow.tx.initiating
 import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
-import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil
+import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AnonymousParty
-import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion as Steps
 
 /**
  * This (currently default) transaction strategy implementation will:
@@ -42,12 +41,12 @@ import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion 
 open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
 
     /** Provides an instance pre-configured with the default progress steps */
-    override val progressTracker = ProgressTrackerUtil.defaultProgressTracker()
+    override val progressTracker = SimpleInitiatingLifecycle.progressTracker()
 
     @Suspendable
     @Suppress("UNUSED_VALUE")
     override fun executeFor(ccEntry: CallContextEntry) {
-        var currentStep = step(Steps.SIGN_INITIAL_TX)
+        var currentStep = step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
         // Perform initial transaction signature
         ccEntry.initial = clientFlow
                 .signInitialTransaction(ccEntry.transactionBuilder)
@@ -58,28 +57,28 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         var sessions: Set<FlowSession> = setOf()
         if (counterParties.isNotEmpty()) {
             // Create counter-party sessions
-            currentStep = step(Steps.CREATE_SESSIONS)
+            currentStep = step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
             sessions = clientFlow.createFlowSessions(counterParties)
             // Perform an ID sync if any of our own participating parties is anonymous
             if (ourParties.any { it is AnonymousParty }) {
-                currentStep = step(Steps.SYNC_IDENTITIES)
+                currentStep = step(SimpleInitiatingLifecycle.SYNC_IDENTITIES)
                 clientFlow.pushOurIdentities(
                         sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
             }
             // Retrieve counter-party signatures
-            currentStep = step(Steps.GATHER_SIGNATURES)
+            currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
             val counterSigned = clientFlow.subFlow(CollectSignaturesFlow(
                     ccEntry.initial!!, sessions, currentStep.childProgressTracker()!!))
-            currentStep = step(Steps.VERIFY_SIGNATURES)
+            currentStep = step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
             counterSigned.verifyRequiredSignatures()
             ccEntry.counterSigned = counterSigned
         }
         // Verify TX builder state
         @Suppress("UNUSED_VALUE")
-        currentStep = step(Steps.VERIFY_TRANSACTION_DATA)
+        currentStep = step(SimpleInitiatingLifecycle.VERIFY_TRANSACTION_DATA)
         ccEntry.transactionBuilder.verify(clientFlow.serviceHub)
         // Finalize
-        currentStep = step(Steps.FINALIZE)
+        currentStep = step(SimpleInitiatingLifecycle.FINALIZE)
         ccEntry.finalized = clientFlow.finalizeTransaction(
                 ccEntry.counterSigned!!, sessions,
                 currentStep.childProgressTracker()!!)

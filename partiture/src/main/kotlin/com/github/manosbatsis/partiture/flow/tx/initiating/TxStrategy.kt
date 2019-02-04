@@ -24,6 +24,7 @@ import com.github.manosbatsis.partiture.flow.PartitureFlow
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegate
+import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import net.corda.core.utilities.ProgressTracker
 
 /** Transaction strategy delegate. */
@@ -33,18 +34,22 @@ interface TxStrategy : PartitureFlowDelegate {
      * Provide the appropriate [ProgressTracker] to the calling flow.
      * Must start with:
      *
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.INITIALIZE]
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.PROCESS_INPUT]
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.POST_PROCESS_INPUT]
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.EXECUTE_TRANSACTIONS]
+     * - [SimpleInitiatingLifecycle.INITIALIZE]
+     * - [SimpleInitiatingLifecycle.PROCESS_INPUT]
+     * - [SimpleInitiatingLifecycle.POST_PROCESS_INPUT]
+     * - [SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS]
      *
      * and end with
      *
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.POST_EXECUTE_TRANSACTIONS]
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.PROCESS_OUTPUT]
-     * - [com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil.Companion.FINISHED]
+     * - [SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS]
+     * - [SimpleInitiatingLifecycle.PROCESS_OUTPUT]
      *
-     * as those steps are always used by the calling flow. Any other steps depend to your implementation.
+     * as those steps are always used by the calling flow. Any in-between steps depend solely on your implementation.
+     *
+     * Recommended: implement a reusable [com.github.manosbatsis.partiture.flow.lifecycle.Lifecycle] `object`
+     * that can then be shared between similar strategies for obtaining a properly configured progress tracker.
+     * See [SimpleInitiatingLifecycle] for an example.
+     *
      */
     val progressTracker: ProgressTracker
 

@@ -22,12 +22,12 @@ package com.github.manosbatsis.partiture.flow
 import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
-import com.github.manosbatsis.partiture.flow.io.InputConverter
-import com.github.manosbatsis.partiture.flow.io.OutputConverter
+import com.github.manosbatsis.partiture.flow.io.input.InputConverter
+import com.github.manosbatsis.partiture.flow.io.output.OutputConverter
+import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import com.github.manosbatsis.partiture.flow.tx.initiating.SimpleTxStrategy
 import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategy
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
-import com.github.manosbatsis.partiture.flow.util.ProgressTrackerUtil
 import net.corda.core.flows.FlowLogic
 import net.corda.core.utilities.ProgressTracker
 
@@ -88,21 +88,21 @@ abstract class PartitureFlow<IN, OUT>(
 
     @Suspendable
     final override fun call(): OUT {
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.INITIALIZE
+        progressTracker.currentStep = SimpleInitiatingLifecycle.INITIALIZE
         initialize()
         // Initialize the input/call context
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.PROCESS_INPUT
+        progressTracker.currentStep = SimpleInitiatingLifecycle.PROCESS_INPUT
         this.callContext = processInput()
         // Perform any post-processing of the input/call context
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.POST_PROCESS_INPUT
+        progressTracker.currentStep = SimpleInitiatingLifecycle.POST_PROCESS_INPUT
         this.callContext = processInput()
         // Delegate processing to txStrategy
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.EXECUTE_TRANSACTIONS
+        progressTracker.currentStep = SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS
         txStrategy.setClientFlow(this).execute()
         // Perform any post-processing of transactions
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.POST_EXECUTE_TRANSACTIONS
+        progressTracker.currentStep = SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS
         // Process and return output
-        progressTracker.currentStep = ProgressTrackerUtil.Companion.PROCESS_OUTPUT
+        progressTracker.currentStep = SimpleInitiatingLifecycle.PROCESS_OUTPUT
         val output = this.processOutput()
         // Update tracker to finished/DONE
         progressTracker.currentStep = ProgressTracker.DONE

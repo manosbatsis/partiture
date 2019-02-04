@@ -24,8 +24,8 @@ import com.github.manosbatsis.partiture.flow.PartitureResponderFlow
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
-import com.github.manosbatsis.partiture.flow.io.FinalizedTxOutputConverter
-import com.github.manosbatsis.partiture.flow.io.InputConverter
+import com.github.manosbatsis.partiture.flow.io.input.InputConverter
+import com.github.manosbatsis.partiture.flow.io.output.FinalizedTxOutputConverter
 import com.github.manosbatsis.partiture.flow.tx.initiating.ParticipantsAwareTransactionBuilder
 import com.github.manosbatsis.partiture.flow.tx.responder.SimpleResponderTxStrategy
 import com.github.manosbatsis.partiture.flow.tx.responder.SimpleTypeCheckingResponderTxStrategy
@@ -87,7 +87,7 @@ class ManualConversionYoFlow(
         // Build-in OUT converter
         outputConverter = FinalizedTxOutputConverter()
 ) {
-    /** Override to manually init the3 flow's CallContext */
+    /** Override to manually init the flow's CallContext */
     override fun processInput(): CallContext {
         val entries = input.map { party ->
             // Prepare a TX builder

@@ -1,0 +1,14 @@
+{
+  "docs": {
+    "Guides": [
+      "introduction",
+      "inputconverters",
+      "txstrategies",
+      "outputconverters",
+      "responders"
+    ],
+    "Reference": [
+      "rsqlsupport"
+    ]
+  }
+}
