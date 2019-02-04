@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>TX Strategies · Partiture</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="&lt;p&gt;Partiture flows delegate transaction processing to instances of &lt;code&gt;TxStrategy&lt;/code&gt;.&lt;/p&gt;
+"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="TX Strategies · Partiture"/><meta property="og:type" content="website"/><meta property="og:url" content="https://manosbatsis.github.io/partitureindex.html"/><meta property="og:description" content="&lt;p&gt;Partiture flows delegate transaction processing to instances of &lt;code&gt;TxStrategy&lt;/code&gt;.&lt;/p&gt;
+"/><meta property="og:image" content="https://manosbatsis.github.io/partiture/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://manosbatsis.github.io/partiture/img/poster.png"/><link rel="shortcut icon" href="/partitureimg/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-131279953-1"></script><script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments); }
+              gtag('js', new Date());
+              gtag('config', 'UA-131279953-1');
+            </script><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="https://unpkg.com/vanilla-back-to-top@7.1.14/dist/vanilla-back-to-top.min.js"></script><script>
+        document.addEventListener('DOMContentLoaded', function() {
+          addBackToTop(
+            {"zIndex":100}
+          )
+        });
+        </script><link rel="stylesheet" href="/partiturecss/main.css"/><script src="/partiturejs/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/partiture"><img class="logo" src="/partitureimg/docusaurus.svg" alt="Partiture"/><h2 class="headerTitleWithLogo">Partiture</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/partituredocs/introduction" target="_self">Documentation</a></li><li class=""><a href="https://github.com/manosbatsis/partiture" target="_self">Repository</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Guides</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Guides</h3><ul class=""><li class="navListItem"><a class="navItem" href="/partituredocs/introduction">Introduction</a></li><li class="navListItem"><a class="navItem" href="/partituredocs/inputconverters">Input Converters</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/partituredocs/txstrategies">TX Strategies</a></li><li class="navListItem"><a class="navItem" href="/partituredocs/outputconverters">Output Converters</a></li><li class="navListItem"><a class="navItem" href="/partituredocs/responders">Responders</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              const headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A') {
+                  document.body.classList.remove('tocActive');
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">TX Strategies</h1></header><article><div><span><p>Partiture flows delegate transaction processing to instances of <code>TxStrategy</code>.
+This reduces error-prone code duplication, and makes flows easier to implement
+and maintain, especially for less experienced developers that now reuse
+strategies provided to them.</p>
+<p>Implementations of <code>TxStrategy</code> also provide a <code>ProgressTracker</code> to their client flow.</p>
+<h2><a class="anchor" aria-hidden="true" id="default-strategy"></a><a href="#default-strategy" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Default Strategy</h2>
+<p><code>SimpleTxStrategy</code> is the default/fallback implementation i.e. value of
+<code>PartitureFlow</code>'s <code>txStrategy</code> constructor parameter. It inspects the
+<code>CallContext.entries</code> of the client flow and performs the following
+for each <code>CallContextEntry</code>:</p>
+<ol>
+<li>Sign an initial transaction</li>
+<li>Create flow sessions for counter-parties, if any exist</li>
+<li>Perform an identity sync if any own anonymous parties are participating in the input/output states in context</li>
+<li>Gather and verify counter-party signatures</li>
+<li>Verify the original transaction builder</li>
+<li>Finalize the transaction</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" id="custom-strategies"></a><a href="#custom-strategies" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Custom Strategies</h2>
+<p>While <code>SimpleTxStrategy</code> may be useful for some common cases, you will probably need
+to implement other strategies that better match your application requirements. Here's
+an example/template:</p>
+<pre><code class="hljs css language-kotlin"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyCustomTxStrategy</span> : <span class="hljs-type">PartitureFlowDelegateBase</span></span>(), TxStrategy {
+
+    <span class="hljs-comment">/** 
+    * Provides an instance pre-configured with the default progress steps.
+    */</span>
+    <span class="hljs-keyword">override</span> <span class="hljs-keyword">val</span> progressTracker = MyCustomLifecycle.progressTracker()
+
+    <span class="hljs-comment">/** This is actually the default implementation already provided by TxStrategy */</span>
+    <span class="hljs-meta">@Suspendable</span>
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">execute</span><span class="hljs-params">()</span></span> {
+        <span class="hljs-comment">// Iterate entries</span>
+        clientFlow.callContext.entries.forEach { executeFor(it) }
+    }
+
+    <span class="hljs-comment">/** Process a CallContextEntry */</span>
+    <span class="hljs-meta">@Suspendable</span>
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">executeFor</span><span class="hljs-params">(ccEntry: <span class="hljs-type">CallContextEntry</span>)</span></span> {
+        <span class="hljs-comment">// Update the currentStep of the client flow's progress tracker  </span>
+        <span class="hljs-keyword">var</span> currentStep = step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
+        <span class="hljs-comment">// Perform initial transaction signature</span>
+        ccEntry.initial = clientFlow
+                .signInitialTransaction(ccEntry.transactionBuilder)
+        <span class="hljs-comment">// Do some other stuff...</span>
+    }
+}
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="progress-tracking"></a><a href="#progress-tracking" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Progress Tracking</h3>
+<p><code>TxStrategy</code> implementations also provide the appropriate <code>ProgressTracker</code> to
+the calling flow, as seen in the <code>MyCustomTxStrategy</code> above.
+The provided <code>ProgressTracker</code> steps <strong>must</strong> start with:</p>
+<ul>
+<li><code>SimpleInitiatingLifecycle.INITIALIZE</code></li>
+<li><code>SimpleInitiatingLifecycle.PROCESS_INPUT</code></li>
+<li><code>SimpleInitiatingLifecycle.POST_PROCESS_INPUT</code></li>
+<li><code>SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS</code></li>
+</ul>
+<p>and <strong>must</strong> end with:</p>
+<ul>
+<li><code>SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS</code></li>
+<li><code>SimpleInitiatingLifecycle.PROCESS_OUTPUT</code></li>
+</ul>
+<p>as those steps are always used by the calling flow.
+Any in-between steps depend solely on your implementation.</p>
+<blockquote>
+<p>Recommended: implement a reusable
+<code>com.github.manosbatsis.partiture.flow.lifecycle.Lifecycle</code> <code>object</code>
+that can then be shared between similar strategies for obtaining a
+properly configured progress tracker.
+See <code>SimpleInitiatingLifecycle</code> for an example.</p>
+</blockquote>
+<h3><a class="anchor" aria-hidden="true" id="updating-the-context"></a><a href="#updating-the-context" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Updating the Context</h3>
+<p><code>TxStrategy</code> implementations are expected to update members of the client flow's
+<code>CallContext</code> and/or of it's <code>CallContextEntry</code> entries (mostly resulting
+<code>SignedTransactions</code>), thus providing all necessary information as appropriate
+for an <code>OutputConverter</code> may require to produce the appropriate output.</p>
+<p>For more info see the next section: <em>Output Converters</em>.</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/partituredocs/inputconverters"><span class="arrow-prev">← </span><span>Input Converters</span></a><a class="docs-next button" href="/partituredocs/outputconverters"><span>Output Converters</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#default-strategy">Default Strategy</a></li><li><a href="#custom-strategies">Custom Strategies</a><ul class="toc-headings"><li><a href="#progress-tracking">Progress Tracking</a></li><li><a href="#updating-the-context">Updating the Context</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="copyright"><a href="http://manosbatsis.github.io/">Copyright © 2019 Manos Batsis</a>.<span> Got a remote contract? Contact me by<a href="mailto:manosbatsis@gmail.com?subject=Remote Contract"> email</a> or<a href="https://www.linkedin.com/in/manosbatsis"> linkedin</a></span></section></footer></div></body></html>
