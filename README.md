@@ -6,7 +6,6 @@ Partiture is a compact component framework for your Corda apps.
 
 See https://manosbatsis.github.io/partiture
 
-
 ## What Does It Do?
 
 For the time being, Partiture's primary goal is flow composition. 
