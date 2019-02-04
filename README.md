@@ -1,4 +1,4 @@
-# Partiture
+# Partiture ![version](https://img.shields.io/badge/version-0.1-blue.svg?maxAge=2592000)  [![Build Status](https://travis-ci.org/manosbatsis/partiture.svg?branch=master)](https://travis-ci.org/manosbatsis/partiture)
 
 Partiture is a compact component framework for your Corda apps.
 
