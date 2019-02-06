@@ -19,6 +19,7 @@
  */
 package mypackage.cordapp.workflow
 
+import com.github.manosbatsis.partiture.flow.PartitureFlow
 import mypackage.cordapp.contract.YO_CONTRACT_PACKAGE
 import mypackage.cordapp.contract.YoContract
 import net.corda.core.node.services.queryBy
@@ -67,13 +68,16 @@ class YoFlowTests {
         network.stopNodes()
     }
 
+
     @Test
-    fun flowWorksCorrectly() {
-        val yo = YoContract.YoState(a.info.legalIdentities.first(), b.info.legalIdentities.first())
-        val flow = YoFlow(b.info.legalIdentities.first())
-        val future = a.startFlow(flow)
-        network.runNetwork()
-        val stx = future.getOrThrow()
+    fun `Test flow with  SingleFinalizedTxOutputConverter`() {
+        val msg = "Yo1"
+        val yo = YoContract.YoState(a.info.legalIdentities.first(),
+                b.info.legalIdentities.first(),
+                yo = msg)
+
+        val stx = flowWorksCorrectly(
+                YoFlow1(YoMessage(b.info.legalIdentities.first(), msg)))
         // Check yo transaction is stored in the storage service.
         val bTx = b.services.validatedTransactions.getTransaction(stx.id)
         assertEquals(bTx, stx)
@@ -81,15 +85,37 @@ class YoFlowTests {
         // Check yo state is stored in the vault.
         b.transaction {
             // Simple query.
-            val bYo = b.services.vaultService.queryBy<YoContract.YoState>().states.single().state.data
+            val bYo = b.services.vaultService.queryBy<YoContract.YoState>()
+                    .states.map { it.state.data }.single { it.yo == msg }
             assertEquals(bYo.toString(), yo.toString())
             print("$bYo == $yo\n")
             // Using a custom criteria directly referencing schema entity attribute.
-            val expression = builder { YoContract.YoState.YoSchemaV1.PersistentYoState::yo.equal("Yo!") }
+            val expression =
+                    builder { YoContract.YoState.YoSchemaV1.PersistentYoState::yo.equal(msg) }
             val customQuery = VaultCustomQueryCriteria(expression)
             val bYo2 = b.services.vaultService.queryBy<YoContract.YoState>(customQuery).states.single().state.data
             assertEquals(bYo2.yo, yo.yo)
             print("$bYo2 == $yo\n")
         }
+    }
+
+    @Test
+    fun `Test flow with testTypedOutputStatesConverter`() {
+        val msg = "Yo2"
+        val yo = YoContract.YoState(
+                a.info.legalIdentities.first(), b.info.legalIdentities.first(),msg)
+
+        val result = flowWorksCorrectly(
+                YoFlow2(YoMessage(b.info.legalIdentities.first(), msg)))
+
+        assertEquals(yo.toString(), result.single().toString())
+    }
+
+    inline fun <reified OUT> flowWorksCorrectly(flow: PartitureFlow<*, OUT>): OUT {
+        val future = a.startFlow(flow)
+        // Ask nodes to process any queued up inbound messages
+        network.runNetwork()
+        return  future.getOrThrow()
+
     }
 }

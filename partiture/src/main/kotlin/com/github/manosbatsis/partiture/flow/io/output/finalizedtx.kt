@@ -23,10 +23,29 @@ import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import net.corda.core.transactions.SignedTransaction
 
-/** Converts to the finalized transaction of the single [CallContext] entry if available, throws an error otherwise. */
+const val MSG_NO_FIN_TX = "Could not find a finalized TX while trying to convert"
+
+/**
+ * Converts to the finalized transactions of (each entry in) the given [CallContext] if available,
+ * throws an error otherwise.
+ */
+class FinalizedTxOutputConverter(
+        /** Whether to ignore [CallContext] entries without a finalized TX */
+        val allowMissing: Boolean = false
+) : PartitureFlowDelegateBase(), OutputConverter<List<SignedTransaction>> {
+    override fun convert(input: CallContext): List<SignedTransaction> {
+        return input.entries.mapNotNull {
+            it.finalized ?: if(allowMissing) null else throw IllegalArgumentException(MSG_NO_FIN_TX)
+        }
+    }
+}
+
+/**
+ * Converts to the finalized transaction of the single [CallContext] entry if available,
+ * throws an error otherwise.
+ */
 class SingleFinalizedTxOutputConverter : PartitureFlowDelegateBase(), OutputConverter<SignedTransaction> {
     override fun convert(input: CallContext): SignedTransaction {
-        return input.entries.single().finalized
-                ?: throw IllegalArgumentException("Could not find a finalized TX while trying to convert")
+        return input.entries.mapNotNull { it.finalized }.single()
     }
 }

@@ -45,22 +45,22 @@ class YoContract : Contract {
         "There can be no inputs when Yo'ing other parties." using (tx.inputs.isEmpty())
         "There must be one output: The Yo!" using (tx.outputs.size == 1)
         val yo = tx.outputsOfType<YoState>().single()
-        "No sending Yo's to yourself!" using (yo.target != yo.origin)
-        "The Yo! must be signed by the sender." using (command.signers.contains(yo.origin.owningKey))
-        //"The Yo! must be signed by the recipient." using (command.signers.contains(yo.target.owningKey))
+        "No sending Yo's to yourself!" using (yo.recepient != yo.sender)
+        "The Yo! must be signed by the sender." using (command.signers.contains(yo.sender.owningKey))
+        //"The Yo! must be signed by the recipient." using (command.signers.contains(yo.recepient.owningKey))
     }
 
     // State.
     @BelongsToContract(YoContract::class)
-    data class YoState(val origin: Party,
-                       val target: Party,
+    data class YoState(val sender: Party,
+                       val recepient: Party,
                        val yo: String = "Yo!") : ContractState, QueryableState {
-        override val participants get() = listOf(origin, target)
-        //override fun toString() = "${origin.name}: $yo"
+        override val participants get() = listOf(sender, recepient)
+        //override fun toString() = "${sender.name}: $yo"
         override fun supportedSchemas() = listOf(YoSchemaV1)
 
         override fun generateMappedObject(schema: MappedSchema) = YoSchemaV1.PersistentYoState(
-                origin.name.toString(), target.name.toString(), yo)
+                sender.name.toString(), recepient.name.toString(), yo)
 
         object YoSchema
 
@@ -68,9 +68,9 @@ class YoContract : Contract {
             @Entity
             @Table(name = "yos")
             class PersistentYoState(
-                    @Column(name = "origin")
+                    @Column(name = "sender")
                     var origin: String = "",
-                    @Column(name = "target")
+                    @Column(name = "recepient")
                     var target: String = "",
                     @Column(name = "yo")
                     var yo: String = ""
