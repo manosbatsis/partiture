@@ -39,6 +39,7 @@ import java.util.*
  * This implementation will not work properly when `copy` or `withItems` are used,
  * see also https://github.com/corda/corda/issues/4708
  */
+@Deprecated("Use a TransactionBuilderWrapper and pass that to the CallContextEntry constructor instead")
 class ParticipantsAwareTransactionBuilder(
         notary: Party? = null,
         lockId: UUID = defaultLockId(),

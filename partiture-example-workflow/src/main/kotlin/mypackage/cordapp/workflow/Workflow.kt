@@ -28,7 +28,7 @@ import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDe
 import com.github.manosbatsis.partiture.flow.io.input.InputConverter
 import com.github.manosbatsis.partiture.flow.io.output.SingleFinalizedTxOutputConverter
 import com.github.manosbatsis.partiture.flow.io.output.TypedOutputStatesConverter
-import com.github.manosbatsis.partiture.flow.tx.initiating.ParticipantsAwareTransactionBuilder
+import com.github.manosbatsis.partiture.flow.tx.TransactionBuilderWrapper
 import com.github.manosbatsis.partiture.flow.tx.responder.SimpleTypeCheckingResponderTxStrategy
 import mypackage.cordapp.contract.YO_CONTRACT_ID
 import mypackage.cordapp.contract.YoContract
@@ -39,7 +39,7 @@ import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 
-/** Used as flow input, to send a recepient a message */
+/** Used as flow input, to send a recipient a message */
 data class YoMessage(
         val recepient: Party,
         val message: String
@@ -48,14 +48,13 @@ data class YoMessage(
 class YoInputConverter : PartitureFlowDelegateBase(), InputConverter<YoMessage> {
     override fun convert(input: YoMessage): CallContext {
         // Prepare a TX builder
-        val txBuilder = ParticipantsAwareTransactionBuilder(clientFlow.getFirstNotary())
-        txBuilder.addOutputState(
-                YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
-                YO_CONTRACT_ID)
-        txBuilder.addCommandFromData(YoContract.Send())
+        val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
+                .addOutputState(
+                    YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
+                    YO_CONTRACT_ID)
+                .addCommand(YoContract.Send())
         // Return a TX context with builder and participants
-
-        return CallContext(CallContextEntry(txBuilder, txBuilder.participants))
+        return CallContext(CallContextEntry(txBuilder))
     }
 }
 

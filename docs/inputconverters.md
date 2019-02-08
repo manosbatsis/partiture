@@ -15,11 +15,13 @@ of the flow in the introduction page:
 override fun processInput(): CallContext {
 	val entries = input.map { party ->
 		// Prepare a TX builder
-		val txBuilder = ParticipantsAwareTransactionBuilder(getFirstNotary())
-		txBuilder.addOutputState(YoContract.YoState(ourIdentity, party), YO_CONTRACT_ID)
-		txBuilder.addCommandFromData(YoContract.Send())
-		// Return a call context/TX entry context with builder and participants
-		CallContextEntry(txBuilder, txBuilder.participants)
+		val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
+				.addOutputState(
+					YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
+					YO_CONTRACT_ID)
+				.addCommand(YoContract.Send())
+		// Return a TX context with builder and participants
+		return CallContext(CallContextEntry(txBuilder))
 	}
 	return CallContext(entries)
 }
@@ -34,11 +36,13 @@ class YoInputConverter : PartitureFlowDelegateBase(), InputConverter<List<Party>
     override fun convert(input: List<Party>): CallContext {
         val entries = input.map { party ->
             // Prepare a TX builder
-            val txBuilder = ParticipantsAwareTransactionBuilder(clientFlow.getFirstNotary())
-            txBuilder.addOutputState(YoContract.YoState(clientFlow.ourIdentity, party), YO_CONTRACT_ID)
-            txBuilder.addCommandFromData(YoContract.Send())
-            // Return a TX context with builder and participants
-            CallContextEntry(txBuilder, txBuilder.participants)
+			val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
+					.addOutputState(
+						YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
+						YO_CONTRACT_ID)
+					.addCommand(YoContract.Send())
+			// Return a TX context with builder and participants
+			return CallContext(CallContextEntry(txBuilder))
         }
         return CallContext(entries)
     }

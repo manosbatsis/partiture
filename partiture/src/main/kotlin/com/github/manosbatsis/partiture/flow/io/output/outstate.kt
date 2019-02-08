@@ -45,19 +45,13 @@ open class OutputStatesConverter(
 }
 
 /**
- * Produce the output by gatherig output states of the given
+ * Output by gathering output states of the given
  * type, optionally applying an additional filter
  */
 open class TypedOutputStatesConverter<T: ContractState>(
         val contractStateType: Class<T>,
         val filter: Predicate<ContractState>? = null
 ) : PartitureFlowDelegateBase(), OutputConverter<List<T>> {
-
-    companion object {
-        @JvmStatic
-        fun <CS : ContractState> forType(contractStateType: Class<CS>) =
-                TypedOutputStatesConverter<CS>(contractStateType)
-    }
 
     override  fun convert(input: CallContext): List<T> {
         // Gather the output states that match the target type

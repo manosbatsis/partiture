@@ -19,6 +19,7 @@
  */
 package com.github.manosbatsis.partiture.flow.call
 
+import com.github.manosbatsis.partiture.flow.tx.TransactionBuilderWrapper
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -31,7 +32,7 @@ data class CallContextEntry(
         /** A fully initialized TransactionBuilder instance */
         val transactionBuilder: TransactionBuilder,
         /** The participants for this transaction */
-        val participants: List<AbstractParty>,
+        val participants: Set<AbstractParty>,
         /** The main initially signed transaction */
         var initial: SignedTransaction? = null,
         /** The main counter-signed transaction */
@@ -43,6 +44,13 @@ data class CallContextEntry(
         /**  Additional metadata for this entry */
         override var meta: MutableMap<String, Any>? = null
 ) : CallMetadata() {
+
+    constructor(
+            transactionBuilderWrapper: TransactionBuilderWrapper
+    ) : this(
+            transactionBuilderWrapper.transactionBuilder(), transactionBuilderWrapper.participants()
+    )
+
     /**
      * Add a custom transaction result
      * @return the previous value associated with the key, or `null` if the key was not present in the map.

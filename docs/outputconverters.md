@@ -17,10 +17,12 @@ are typically more widely applicable than input converters.
 
 Build-in converters reside in the `com.github.manosbatsis.partiture.flow.io.output` package.
 
-| Class			                   	   	| OUT Type, Description                                                                                                                              	|
-|-------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------	|
-| `FinalizedTxOutputConverter` 	    	| `List<SignedTransaction>`. Converts to the finalized transactions of (each entry in) the given `CallContext`. Throws an error if none is available for any an entry 	|
-| `SingleFinalizedTxOutputConverter`	| `SignedTransaction`. Converts to the finalized transaction of the __single__ `CallContext` entry if available, throws an error otherwise                      	|
+| Class			                   	   	| OUT Type, Description                                                                                                                              					|
+|-------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FinalizedTxOutputConverter` 	    	| `List<SignedTransaction>`. Converts to the finalized transactions of (each entry in) the given `CallContext`. Throws an error if none is available for any an entry	|
+| `SingleFinalizedTxOutputConverter`	| `SignedTransaction`. Converts to the finalized transaction of the __single__ `CallContext` entry if available, throws an error otherwise								|
+| `OutputStatesConverter`				| `List<ContractState>`. Produce the output by gathering output states,  optionally applying an additional filter. Supports an optional filter `Predicate`						|
+| `TypedOutputStatesConverter`			| `<T: ContractState> List<T>`. Output by gathering output states of the given type, optionally applying an additional filter `Predicate`								|
 
 
 ## Custom Output Converters
