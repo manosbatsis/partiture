@@ -9,7 +9,7 @@ For the time being, it's primary goal is flow composition.
 ## Installation
 
 ```groovy
-cordaCompile "com.github.manosbatsis.partiture:partiture:0.1"
+cordaCompile "com.github.manosbatsis.partiture:partiture:0.2"
 ```
 
 ## Example Flows

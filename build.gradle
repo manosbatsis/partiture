@@ -55,7 +55,7 @@ allprojects {
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.2-SNAPSHOT"
+    version = "0.2"
     apply plugin: 'project-report'
 }
 subprojects {
@@ -140,13 +140,7 @@ configure([project(':partiture'), project(':partiture-test')]) {
             suffix = "#L"
         }
     }
-/*
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-    */
+    
     task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
         outputFormat = 'javadoc'
         outputDirectory = javadoc.destinationDir
@@ -160,7 +154,60 @@ configure([project(':partiture'), project(':partiture-test')]) {
         from sourceSets.main.allSource
         classifier = 'sources'
     }
+    
     artifacts { archives jar, sourcesJar, javadocJar }
+    // Conditional signature of artifacts
+    if (project.findProperty('signing.password') != '<YOUR-PASSWORD>') {
+        signing {
+            sign configurations.archives
+        }
+    }
+
+    // Upload the archives
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                // Sign POMs
+                beforeDeployment { MavenDeployment deployment ->
+                    signing.signPom(deployment)
+                }
+                // Release and Snapshot repos
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+                // Add required metadata to POM
+                pom {
+                    project {
+                        name project.name
+                        packaging project.name == rootProject.name ? 'pom' : 'jar'
+                        description 'Partiture is a compact component framework for your Corda apps.'
+                        url 'https://manosbatsis.github.io/partiture/'
+                        scm {
+                            connection 'scm:git:git://github.com/manosbatsis/partiture.git'
+                            developerConnection 'scm:git:ssh://github.com/manosbatsis/partiture.git'
+                            url 'http://github.com/manosbatsis/partiture/tree/master'
+                        }
+                        licenses {
+                            license {
+                                name 'GNU Lesser General Public License, Version 3'
+                                url 'https://www.gnu.org/licenses/lgpl-3.0.txt'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id 'manosbatsis'
+                                name 'Manos Batsis'
+                                email 'manosbatsis@gmail.com'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
