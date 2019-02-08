@@ -56,8 +56,6 @@ allprojects {
     }
     group = "com.github.manosbatsis.partiture"
     version = "0.2-SNAPSHOT"
-
-    apply from: "$rootDir/gradle/published.gradle"
     apply plugin: 'project-report'
 }
 subprojects {
@@ -126,3 +124,43 @@ subprojects {
         strictCheck true
     }
 }
+configure([project(':partiture'), project(':partiture-test')]) {
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'org.jetbrains.dokka'
+
+    dokka {
+        outputFormat = 'javadoc'
+        outputDirectory = javadoc.destinationDir
+        //inputs.dir 'src/main/kotlin'
+        linkMapping {
+            dir = "src/main/kotlin"
+            url = "https://github.com/manosbatsis/partiture/tree/master/${project.name}/src/main/kotlin"
+            suffix = "#L"
+        }
+    }
+/*
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+    */
+    task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+        outputFormat = 'javadoc'
+        outputDirectory = javadoc.destinationDir
+        inputs.dir 'src/main/kotlin'
+    }
+    task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
+    artifacts { archives jar, sourcesJar, javadocJar }
+}
+
+

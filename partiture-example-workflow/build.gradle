@@ -29,7 +29,7 @@ dependencies {
     testImplementation ("$corda_release_group:corda-node-driver:$corda_release_version")
 }
 
-task deployNodes(type: net.corda.plugins.Cordform, dependsOn: [':server:jar']) {
+task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     directory "./build/nodes"
     node {
         name "O=Notary,L=London,C=GB"
