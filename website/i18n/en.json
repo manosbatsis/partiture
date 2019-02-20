@@ -5,6 +5,9 @@
     "previous": "Previous",
     "tagline": "A compact component framework for your Corda apps.",
     "docs": {
+      "changelog": {
+        "title": "Changelog"
+      },
       "inputconverters": {
         "title": "Input Converters"
       },
@@ -26,8 +29,7 @@
       "Repository": "Repository"
     },
     "categories": {
-      "Guides": "Guides",
-      "Reference": "Reference"
+      "Guides": "Guides"
     }
   },
   "pages-strings": {

@@ -9,7 +9,7 @@ For the time being, it's primary goal is flow composition.
 ## Installation
 
 ```groovy
-cordaCompile "com.github.manosbatsis.partiture:partiture:0.2"
+cordaCompile "com.github.manosbatsis.partiture:partiture:$partiture_version"
 ```
 
 ## Example Flows
@@ -88,4 +88,3 @@ class YoFlowResponder(
 The above responder flow will verify the transaction 
 and ensure all output states are instances of `YoState` before signing.
 
- 
