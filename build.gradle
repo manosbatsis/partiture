@@ -2,7 +2,7 @@ buildscript {
     ext {
 
         corda_release_group = 'net.corda'
-        corda_release_version = '4.0-RC07'
+        corda_release_version = '4.0'
         corda_gradle_plugins_version = '4.0.40'
         corda_platform_version = '4'
         dokka_version = '0.9.17'
@@ -56,7 +56,7 @@ allprojects {
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.4-SNAPSHOT"
+    version = "0.4"
     apply plugin: 'project-report'
 }
 subprojects {
