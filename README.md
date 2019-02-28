@@ -1,3 +1,7 @@
+<h1 align=center>
+<img src="logotype.svg" width=50%>
+</h1>
+
 # Partiture [![Maven Central](https://img.shields.io/maven-central/v/com.github.manosbatsis.partiture/partiture.svg)](https://mvnrepository.com/artifact/com.github.manosbatsis.partiture/partiture) [![Build Status](https://travis-ci.org/manosbatsis/partiture.svg?branch=master)](https://travis-ci.org/manosbatsis/partiture)
 
 Partiture is a compact component framework for your Corda apps.
