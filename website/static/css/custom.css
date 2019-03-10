@@ -15,6 +15,6 @@
 @media only screen and (min-width: 1500px) {
 }
 
-img.logo, div.projectLogo img {
-    display: none
+.headerTitleWithLogo, div.projectLogo img {
+    display: none !important;
 }

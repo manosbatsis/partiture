@@ -27,6 +27,7 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.AnonymousParty
 import net.corda.core.identity.Party
+import net.corda.core.node.services.IdentityService
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
@@ -136,4 +137,27 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
         val myKeys = serviceHub.keyManagementService.keys
         return parties.partition { myKeys.contains(it.owningKey) }
     }
+
+    /**
+     * Returns a set of [Party] matches for the given strings, trying exact and if needed fuzzy matching for each.
+     * If not exactly one match is found for any name an error will be thrown.
+     *
+     * @param names The names to convert to parties
+     */
+    fun getParties(names: Iterable<String>): Set<Party> {
+        val identityService = this.serviceHub.identityService
+        return names.map {
+            getParty(it, identityService)
+        }.toSet()
+    }
+
+    /**
+     * Returns a [Party] match for the given name string, trying exact and if needed fuzzy matching.
+     * If not exactly one match is found an error will be thrown.
+     *
+     * @param name The name to convert to a party
+     */
+    fun getParty(name: String, identityService: IdentityService = this.serviceHub.identityService) =
+            (identityService.partiesFromName(name, true).singleOrNull()
+                    ?: identityService.partiesFromName(name, false).single())
 }
