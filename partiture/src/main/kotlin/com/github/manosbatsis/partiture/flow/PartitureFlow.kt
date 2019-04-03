@@ -29,6 +29,7 @@ import com.github.manosbatsis.partiture.flow.tx.initiating.SimpleTxStrategy
 import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategy
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.FlowSession
 import net.corda.core.utilities.ProgressTracker
 
 /**
@@ -74,6 +75,12 @@ open class PartitureFlow<IN, OUT>(
     open fun postProcessInput() { /* NO-OP */
     }
 
+
+    /** Called after counterparty sessions are created */
+    @Suspendable
+    open fun postCreateFlowSessions(sessions: Set<FlowSession> = emptySet()) { /* NO-OP */
+    }
+
     /**
      * Produce an instance of the desired type for flow `OUT`.
      *
@@ -82,7 +89,7 @@ open class PartitureFlow<IN, OUT>(
      * or override the method to convert manually.
      */
     @Suspendable
-    fun processOutput(): OUT {
+    open fun processOutput(): OUT {
         return convert(outputConverter, callContext, "Output")
     }
 
@@ -95,7 +102,7 @@ open class PartitureFlow<IN, OUT>(
         this.callContext = processInput()
         // Perform any post-processing of the input/call context
         progressTracker.currentStep = SimpleInitiatingLifecycle.POST_PROCESS_INPUT
-        this.callContext = processInput()
+        postProcessInput()
         // Delegate processing to txStrategy
         progressTracker.currentStep = SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS
         txStrategy.setClientFlow(this).execute()

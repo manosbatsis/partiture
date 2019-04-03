@@ -33,7 +33,7 @@ import net.corda.core.identity.AnonymousParty
  * - For each available [CallContextEntry] in the flow's CallContext
  *      - Sign an initial transaction
  *      - Create flow sessions for counter-parties, if any exist
- *      - Perform an identity sync if any own anonymous parties are participating in the input/output states in context
+ *      - Perform an identity sync if `forceIdentitySync` is `true` or if any own anonymous parties are participating in the input/output states in context
  *      - Gather and verify counter-party signatures
  *      - Verify the original transaction builder
  *      - Finalize the transaction
@@ -42,10 +42,12 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
 
     /** Provides an instance pre-configured with the default progress steps */
     override val progressTracker = SimpleInitiatingLifecycle.progressTracker()
+
     @Suspendable
     override fun execute() {
         clientFlow.callContext.entries.forEach { executeFor(it) }
     }
+
     @Suspendable
     @Suppress("UNUSED_VALUE")
     override fun executeFor(ccEntry: CallContextEntry) {
@@ -63,17 +65,20 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
             step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
             sessions = clientFlow.createFlowSessions(counterParties)
             // Perform an ID sync if any of our own participating parties is anonymous
-            if (ourParties.any { it is AnonymousParty }) {
+            if (clientFlow.forceIdentitySync || ourParties.any { it is AnonymousParty }) {
                 val currentStep = step(SimpleInitiatingLifecycle.SYNC_IDENTITIES)
                 clientFlow.pushOurIdentities(
                         sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
             }
+            clientFlow.postCreateFlowSessions(sessions)
             // Retrieve counter-party signatures
             val currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
             val counterSigned = clientFlow.subFlow(CollectSignaturesFlow(
                     ccEntry.initial!!, sessions, currentStep.childProgressTracker()!!))
             step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
-            counterSigned.verifyRequiredSignatures()
+            if(ccEntry.transactionBuilder.notary != null)
+                counterSigned.verifySignaturesExcept(ccEntry.transactionBuilder.notary!!.owningKey)
+            else counterSigned.verifyRequiredSignatures()
             ccEntry.counterSigned = counterSigned
         }
         // Verify TX builder state

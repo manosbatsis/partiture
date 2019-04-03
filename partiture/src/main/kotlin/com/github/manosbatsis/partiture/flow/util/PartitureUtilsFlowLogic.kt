@@ -38,6 +38,8 @@ import net.corda.core.utilities.ProgressTracker
  */
 abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
+    open val forceIdentitySync = false
+
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
     fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> =
@@ -160,4 +162,5 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
     fun getParty(name: String, identityService: IdentityService = this.serviceHub.identityService) =
             (identityService.partiesFromName(name, true).singleOrNull()
                     ?: identityService.partiesFromName(name, false).single())
+
 }
