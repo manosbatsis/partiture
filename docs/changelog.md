@@ -5,8 +5,9 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
-## 0.5-SNAPSHOT
+## 0.5
 
+- Exposed counter-party sessions via `CallContext` 
 - Added String to Party helpers
 - Added the project logo, kindly contributed by [Mirza Zulfan](https://github.com/mirzazulfan)
 
