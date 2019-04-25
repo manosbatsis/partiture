@@ -56,7 +56,7 @@ allprojects {
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.5-SNAPSHOT"
+    version = "0.5"
     apply plugin: 'project-report'
 }
 subprojects {

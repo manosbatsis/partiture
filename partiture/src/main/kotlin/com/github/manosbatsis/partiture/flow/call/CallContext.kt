@@ -19,6 +19,8 @@
  */
 package com.github.manosbatsis.partiture.flow.call
 
+import net.corda.core.flows.FlowSession
+
 /**
  * Contains information for each (finalized) transaction relevant to the current FlowLogic call.
  */
@@ -28,9 +30,15 @@ data class CallContext(
          * to create a (finalized) transaction.
          */
         val entries: MutableList<CallContextEntry> = mutableListOf(),
+        /**
+         * Counter-party flow sessions, set during EXECUTE_TRANSACTIONS step by
+         * [com.github.manosbatsis.partiture.flow.PartitureFlow.createFlowSessions]
+         */
+        var sessions: Set<FlowSession> = emptySet(),
         /**  Additional (top-level) metadata */
         override var meta: MutableMap<String, Any>? = null
 ) : CallMetadata() {
+
     constructor(entry: CallContextEntry) : this() {
         this.entries.add(entry)
     }
