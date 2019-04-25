@@ -88,3 +88,7 @@ class YoFlowResponder(
 The above responder flow will verify the transaction 
 and ensure all output states are instances of `YoState` before signing.
 
+## Sample Project
+
+Partiture is used in the workflow module of the corbeans-yo-cordapp sample project, 
+check it out at https://github.com/manosbatsis/corbeans-yo-cordapp/tree/master/cordapp-workflow
