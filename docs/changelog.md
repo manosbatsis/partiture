@@ -5,6 +5,12 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
+## 0.6-SNAPSHOT
+
+- Added `PartitureResponderFlow.preSignTransaction` method to allow custom logic before 
+calling a `SignTransactionFlow`
+- Added `TxStrategyExecutionException` and `PartitureFlow.handleFailedTxStrategy`
+
 ## 0.5
 
 - Exposed counter-party sessions via `CallContext` 

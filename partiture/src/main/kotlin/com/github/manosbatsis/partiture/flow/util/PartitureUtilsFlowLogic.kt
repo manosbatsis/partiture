@@ -42,9 +42,14 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
-    open fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> =
-        participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
-                .map { initiateFlow(toWellKnownParty(it)) }.toSet()
+    open fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> {
+        val filtered = participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
+        val sessions = mutableSetOf<FlowSession>()
+        for(p in filtered){
+            sessions.add(initiateFlow(toWellKnownParty(p)))
+        }
+        return sessions
+    }
 
 
     /** Push our identities to the given counter-party sessions */

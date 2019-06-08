@@ -27,6 +27,7 @@ import com.github.manosbatsis.partiture.flow.io.output.OutputConverter
 import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import com.github.manosbatsis.partiture.flow.tx.initiating.SimpleTxStrategy
 import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategy
+import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategyExecutionException
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
@@ -115,7 +116,11 @@ open class PartitureFlow<IN, OUT>(
         postProcessInput()
         // Delegate processing to txStrategy
         progressTracker.currentStep = SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS
-        txStrategy.setClientFlow(this).execute()
+        try {
+            txStrategy.setClientFlow(this).execute()
+        } catch(e: TxStrategyExecutionException) {
+            this.handleFailedTxStrategy(e)
+        }
         // Perform any post-processing of transactions
         progressTracker.currentStep = SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS
         // Process and return output
@@ -131,5 +136,14 @@ open class PartitureFlow<IN, OUT>(
         return if (converter != null) converter.setClientFlow(this).convert(input)
         else throw NotImplementedError("This convert${sourceName}() implementation requires an ${sourceName}ConverterDelegate. " +
                 "Either provide one in the flow's constructor or override the method to convert manually.")
+    }
+
+    /**
+     * Handle a TX strategy execution error.
+     * The default implementation simply throws the given exception
+     */
+    open fun handleFailedTxStrategy(e: TxStrategyExecutionException) {
+        // throw it by default
+        throw e
     }
 }

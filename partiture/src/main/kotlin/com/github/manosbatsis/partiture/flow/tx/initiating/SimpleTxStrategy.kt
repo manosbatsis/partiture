@@ -24,8 +24,10 @@ import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import net.corda.core.flows.CollectSignaturesFlow
+import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AnonymousParty
+import java.lang.Exception
 
 /**
  * This (currently default) transaction strategy implementation will:
@@ -44,8 +46,15 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
     override val progressTracker = SimpleInitiatingLifecycle.progressTracker()
 
     @Suspendable
+    @Throws(TxStrategyExecutionException::class)
     override fun execute() {
-        clientFlow.callContext.entries.forEach { executeFor(it) }
+        try {
+            clientFlow.callContext.entries.forEach { executeFor(it) }
+        } catch (e: FlowException) {
+            throw TxStrategyExecutionException("Failed to execute", e, e.originalErrorId)
+        } catch (e: Exception) {
+            throw TxStrategyExecutionException("Failed to execute", e)
+        }
     }
 
     @Suspendable

@@ -36,12 +36,19 @@ abstract class PartitureResponderFlow(
         val responderTxStrategy: ResponderTxStrategy
 ) : PartitureUtilsFlowLogic<Unit>() {
 
+    /** Override to do something before calling [SignTransactionFlow] */
+    @Suspendable
+    open fun preSignTransaction() {
+        /* NO-OP */
+    }
     /**
      * Use the given ResponderTxStrategy to obtain a [SignTransactionFlow]
      * that verifies and signs the transaction
      */
     @Suspendable
     final override fun call() {
+        // Call any custom logic
+        preSignTransaction()
         // Create our custom SignTransactionFlow
         val signTransactionFlow = responderTxStrategy
                 .setClientFlow(this).createSignTransactionFlow()

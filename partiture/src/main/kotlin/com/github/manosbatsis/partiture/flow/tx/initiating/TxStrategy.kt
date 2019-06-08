@@ -74,13 +74,23 @@ interface TxStrategy : PartitureFlowDelegate {
      * entries of the flow's [CallContext], calling
      * [com.github.manosbatsis.partiture.flow.tx.TxStrategy.executeTransaction]
      * with each entry.
+     *
+     * It is a good practice to only throw [TxStrategyExecutionException]s from this method.
+     * @see com.github.manosbatsis.partiture.flow.PartitureFlow.handleFailedTxStrategy
      */
     @Suspendable
+    @Throws(TxStrategyExecutionException::class)
     fun execute() {
         clientFlow.callContext.entries.forEach { executeFor(it) }
     }
 
-    /** Process the given [CallContextEntry] */
+    /**
+     * Process the given [CallContextEntry]
+     *
+     * It is a good practice to only throw [TxStrategyExecutionException]s from this method.
+     * @see com.github.manosbatsis.partiture.flow.PartitureFlow.handleFailedTxStrategy
+     */
     @Suspendable
+    @Throws(TxStrategyExecutionException::class)
     fun executeFor(ccEntry: CallContextEntry)
 }
