@@ -169,7 +169,7 @@ configure([project(':partiture'), project(':partiture-test')]) {
         repositories {
             mavenDeployer {
                 // Sign POMs
-                beforeDeployment { MavenDeployment deployment ->
+                beforeDeployment { deployment ->
                     signing.signPom(deployment)
                 }
                 // Release and Snapshot repos
