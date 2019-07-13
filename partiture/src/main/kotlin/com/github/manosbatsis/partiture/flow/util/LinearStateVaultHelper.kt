@@ -45,6 +45,7 @@ class LinearStateVaultHelper<T : LinearState>(val vaultService: VaultService, va
         return findByLinearId(linearId, status, participants) ?: throw FlowException("Linear ID $linearId not found.")
     }
 
+
     /** Get the state matching the linear ID if it exists, null otherwise */
     fun findByLinearId(
             linearId: UniqueIdentifier,

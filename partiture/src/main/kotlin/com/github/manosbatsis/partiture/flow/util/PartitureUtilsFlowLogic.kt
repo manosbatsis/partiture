@@ -22,10 +22,12 @@ package com.github.manosbatsis.partiture.flow.util
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.IdentitySyncFlow
 import net.corda.core.flows.FinalityFlow
+import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.AnonymousParty
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.node.services.IdentityService
 import net.corda.core.transactions.SignedTransaction
@@ -39,6 +41,26 @@ import net.corda.core.utilities.ProgressTracker
 abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     open val forceIdentitySync = false
+
+    /** Get a list of nodes in the network, including self and notaries */
+    fun allNodes(): List<Party> {
+        val nodes = serviceHub.networkMapCache.allNodes
+        return nodes.map { it.legalIdentities.first() }
+
+    }
+
+    /** Get a list of network peers, i.e. nodes excluding self and notaries  */
+    fun peers(): List<Party> {
+        val notaries = serviceHub.networkMapCache.notaryIdentities
+        val nodes = serviceHub.networkMapCache.allNodes
+        val myIdentity = this.ourIdentity
+        return nodes.filter { nodeInfo ->
+            // Filter out self and notaries
+            nodeInfo.legalIdentities.find {
+                it == myIdentity || notaries.contains(it)
+            } == null
+        }.map { it.legalIdentities.first() }
+    }
 
     /** Filter the participants to get a [FlowSession] per distinct counter-party. */
     @Suspendable
@@ -72,6 +94,31 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
     ): SignedTransaction {
         return subFlow(FinalityFlow(tx, sessions, tracker))
     }
+
+    /**
+     * Resolve to a well known party
+     * @param name an organization or X500 name
+     * @throws [RuntimeException] if a party cannot be resolved
+     */
+    fun toWellKnownParty(name: String): Party =
+        if(name.contains("O=")) toWellKnownParty(CordaX500Name.parse(name))
+        else getParty(name, serviceHub.identityService)
+
+
+    /**
+     * Resolve to a well known party
+     * @throws [RuntimeException] if a party cannot be resolved
+     */
+    fun toWellKnownParty(x500Name: CordaX500Name): Party =
+            serviceHub.identityService.wellKnownPartyFromX500Name(x500Name)
+                    ?: throw RuntimeException("Could resolve to known party: ${x500Name}")
+
+    /**
+     * Resolve the given parties
+     * @throws [RuntimeException] if a party cannot be resolved
+     */
+    fun toWellKnownPartiesFromName(parties: Iterable<CordaX500Name>): List<Party> =
+            parties.map { toWellKnownParty(it) }
 
     /**
      * Resolve to a known party if [AnonymousParty], return as-is (i.e. [Party]) otherwise
@@ -136,8 +183,8 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
     }
 
     /**
-     * Splits the original collection into pair of lists,
-     * where first list contains our identities and the second those of counter-parties.
+     * Splits the original collection into pair of lists, where first list contains our identities
+     * and the second list contains those belonging to counter-parties.
      */
     fun partitionOursAndTheirs(
             parties: Collection<AbstractParty>
@@ -167,6 +214,7 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      */
     fun getParty(name: String, identityService: IdentityService = this.serviceHub.identityService) =
             (identityService.partiesFromName(name, true).singleOrNull()
-                    ?: identityService.partiesFromName(name, false).single())
+                    ?: identityService.partiesFromName(name, false).singleOrNull())
+                    ?: throw FlowException("Party not found for string '${name}'")
 
 }
