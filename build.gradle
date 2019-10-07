@@ -54,6 +54,8 @@ allprojects {
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-dev/' }
         //Needed only for SNAPSHOT versions
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
+        // Gradle tooling API
+        maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     }
     group = "com.github.manosbatsis.partiture"
     version = "0.6-SNAPSHOT"
