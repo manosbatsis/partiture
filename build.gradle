@@ -2,8 +2,8 @@ buildscript {
     ext {
 
         corda_release_group = 'net.corda'
-        corda_release_version = '4.0'
-        corda_gradle_plugins_version = '4.0.40'
+        corda_release_version = '4.1'
+        corda_gradle_plugins_version = '4.0.45'
         corda_platform_version = '4'
         dokka_version = '0.9.17'
         junitVersion = '5.1.1'
@@ -58,6 +58,27 @@ allprojects {
     group = "com.github.manosbatsis.partiture"
     version = "0.6-SNAPSHOT"
     apply plugin: 'project-report'
+
+    configurations {
+        // Adding a configuration that extends existing configuration:
+        //(testCompile was added by the java plugin)
+        integrationTestCompile.extendsFrom(testCompile)
+        all {
+            // Exclude old Junit since we use jupiter
+            exclude group: 'junit', module: 'junit'
+            // Stop deprecation warnings since we use stdlib-jdkX
+            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jre8'
+            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jre7'
+            resolutionStrategy {
+                // Force dependencies to use the same version of Guava as Corda.
+                force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+                force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+                force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+                force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+                force "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+            }
+        }
+    }
 }
 subprojects {
     apply plugin: 'license'
