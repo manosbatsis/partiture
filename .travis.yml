@@ -1,15 +1,30 @@
+dist: trusty
 language: java
 
-#addons:
-#  apt:
-#    packages:
-#      - oracle-java8-installer
 jdk:
   - oraclejdk8
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:webupd8team/java'
+    packages:
+      - oracle-java8-installer
 
 before_install:
   - chmod +x gradlew
 
 install: echo "skip 'gradle assemble' step"
-script: ./gradlew build
-after_failure: cat /home/travis/build/manosbatsis/partiture/build/reports/tests/test/index.html
+script: ./gradlew build --console=plain -Dorg.gradle.logging.level=warn
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+after_failure: cat /home/travis/build/manosbatsis//build/reports/tests/test/index.html
