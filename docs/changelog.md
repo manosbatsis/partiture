@@ -5,7 +5,7 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
-## 0.6-SNAPSHOT
+## 0.6
 
 - Added `PartitureResponderFlow.preSignTransaction` method to allow custom logic before 
 calling a `SignTransactionFlow`
