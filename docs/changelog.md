@@ -5,6 +5,11 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
+## 0.7-SNAPSHOT
+
+- Deprecated `LinearStateVaultHelper` in favour of [Vaultaire](https://manosbatsis.github.io/vaultaire/)'s state services.
+
+
 ## 0.6
 
 - Added `PartitureResponderFlow.preSignTransaction` method to allow custom logic before 

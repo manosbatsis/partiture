@@ -29,6 +29,7 @@ import net.corda.core.node.services.VaultService
 import net.corda.core.node.services.vault.QueryCriteria
 
 /** Vault access helper for linear contract states */
+@Deprecated("Use Vaultaire's state service")
 class LinearStateVaultHelper<T : LinearState>(val vaultService: VaultService, val stateType: Class<out T>) {
 
     /** Lazy reusable set of the single state type used in vault queries etc. */
