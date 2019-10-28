@@ -143,6 +143,7 @@ open class PartitureFlow<IN, OUT>(
      * The default implementation simply throws the given exception
      */
     open fun handleFailedTxStrategy(e: TxStrategyExecutionException) {
+        logger.error("Strategy errored: ${this.javaClass.simpleName}: ")
         // throw it by default
         throw e
     }

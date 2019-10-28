@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "scripts": {
     "examples": "docusaurus-examples",
     "start": "docusaurus-start",

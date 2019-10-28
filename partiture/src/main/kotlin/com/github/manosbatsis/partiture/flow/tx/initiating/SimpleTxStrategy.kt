@@ -27,7 +27,6 @@ import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AnonymousParty
-import java.lang.Exception
 
 /**
  * This (currently default) transaction strategy implementation will:
@@ -51,7 +50,7 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         try {
             clientFlow.callContext.entries.forEach { executeFor(it) }
         } catch (e: FlowException) {
-            throw TxStrategyExecutionException("Failed to execute", e, e.originalErrorId)
+            throw TxStrategyExecutionException("Failed to execute strategy", e, e.originalErrorId)
         } catch (e: Exception) {
             throw TxStrategyExecutionException("Failed to execute", e)
         }
