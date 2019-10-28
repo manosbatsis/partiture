@@ -213,7 +213,8 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      * @param name The name to convert to a party
      */
     fun getParty(name: String, identityService: IdentityService = this.serviceHub.identityService) =
-            (identityService.partiesFromName(name, true).singleOrNull()
+            if(name.contains("O=") && name.contains("C=")) toWellKnownParty(CordaX500Name.parse(name))
+            else (identityService.partiesFromName(name, true).singleOrNull()
                     ?: identityService.partiesFromName(name, false).singleOrNull())
                     ?: throw FlowException("Party not found for string '${name}'")
 

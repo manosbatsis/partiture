@@ -24,12 +24,14 @@ import net.corda.core.identity.Party
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.internal.chooseIdentity
 import net.corda.testing.node.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
 
 /**
  * Automatically intitializes a [MockNetwork] with [StartedMockNode]s based on constructor parameters
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
 
     constructor(vararg names: CordaX500Name) : this(names.map {
@@ -55,8 +57,9 @@ abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
     protected lateinit var nodeMap: Map<Any, StartedMockNode>
 
     /** Setup a network based on [getNodeHints] */
-    @BeforeEach
-    fun setup() {
+    @BeforeAll
+    fun beforeAll() {
+        println("beforeAll, input: $input")
         network = buildMockNetwork()
         nodeMap = input
                 .map {
@@ -72,7 +75,7 @@ abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
                 }
                 .flatMap { it.entries }
                 .map { it.key to it.value }.toMap()
-        network.runNetwork()
+        network.startNodes()
         postSetup()
     }
 
@@ -102,8 +105,8 @@ abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
     }
 
     /** Shut down the network */
-    @AfterEach
-    fun cleanUp() {
+    @AfterAll
+    fun afterAll() {
         network.stopNodes()
     }
 }
