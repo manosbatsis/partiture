@@ -49,7 +49,7 @@ class SimpleTypeCheckingResponderTxStrategy(
                         postfix = "]"
                 ) { it.name }
                 stx.tx.outputs.forEach { output ->
-                    msg using (contractStateTypes.any { it.isAssignableFrom(output.data.javaClass) })
+                    "$msg, but was ${output.data.javaClass.canonicalName}" using (contractStateTypes.any { it.isAssignableFrom(output.data.javaClass) })
                 }
             }
         }
