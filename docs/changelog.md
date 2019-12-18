@@ -5,7 +5,11 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
-## 0.7-SNAPSHOT
+## 0.8-SNAPSHOT
+
+- Upgraded Corda dependencies to 4.3
+
+## 0.7
 
 - Deprecated `LinearStateVaultHelper` in favour of [Vaultaire](https://manosbatsis.github.io/vaultaire/)'s state services.
 
