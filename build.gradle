@@ -58,7 +58,7 @@ allprojects {
         maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.8-SNAPSHOT"
+    version = "0.8"
     apply plugin: 'project-report'
 
     configurations {

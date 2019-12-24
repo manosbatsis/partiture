@@ -5,7 +5,7 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
-## 0.8-SNAPSHOT
+## 0.8
 
 - Upgraded Corda dependencies to 4.3
 
