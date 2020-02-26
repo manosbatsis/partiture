@@ -96,7 +96,7 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         // Finalize
         val currentStep = step(SimpleInitiatingLifecycle.FINALIZE)
         ccEntry.finalized = clientFlow.finalizeTransaction(
-                ccEntry.counterSigned!!, sessions,
+                ccEntry.counterSigned?:ccEntry.initial!!, sessions,
                 currentStep.childProgressTracker()!!)
     }
 }
