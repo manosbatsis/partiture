@@ -23,13 +23,17 @@ import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.internal.chooseIdentity
-import net.corda.testing.node.*
+import net.corda.testing.node.MockNetwork
+import net.corda.testing.node.MockNetworkParameters
+import net.corda.testing.node.MockNodeParameters
+import net.corda.testing.node.StartedMockNode
+import net.corda.testing.node.TestCordapp
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 
 /**
- * Automatically intitializes a [MockNetwork] with [StartedMockNode]s based on constructor parameters
+ * Automatically initializes a [MockNetwork] with [StartedMockNode]s based on constructor parameters
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
@@ -106,7 +110,9 @@ abstract class MockNetworkFlowTest(val input: List<MockNodeParameters>) {
 
     /** Shut down the network */
     @AfterAll
-    fun afterAll() {
+    fun afterAll() = stopNodes()
+
+    open fun stopNodes(){
         network.stopNodes()
     }
 }

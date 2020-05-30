@@ -5,6 +5,11 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
+## 0.10
+
+- Upgraded Corda dependencies to 4.4
+- Added  `open fun MockNetworkFlowTest.stopNodes()` 
+
 ## 0.9
 
 - Fixed `SimpleTxStrategy` error in case of no counterparties

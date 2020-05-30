@@ -2,19 +2,18 @@ buildscript {
     ext {
 
         corda_release_group = 'net.corda'
-        corda_release_version = '4.3'
-        corda_gradle_plugins_version = '4.0.45'
+        corda_release_version = '4.4'
+        corda_gradle_plugins_version = '5.0.6'
         corda_platform_version = '4'
         dokka_version = '0.9.17'
         jupiter_version = '5.3.2'
         kotlin_version = '1.2.71'
     }
-
     repositories {
         mavenLocal()
+        mavenCentral()
         jcenter()
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
-
     }
     dependencies {
         classpath "net.corda.plugins:publish-utils:$corda_gradle_plugins_version"
@@ -46,19 +45,17 @@ nexusStaging {
 allprojects {
     repositories {
         mavenLocal()
-        jcenter()
         mavenCentral()
+        jcenter()
         maven { url 'https://jitpack.io' }
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
-        //Needed only for Corda SNAPSHOT versions
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-dev/' }
-        //Needed only for SNAPSHOT versions
-        maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
-        // Gradle tooling API
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases' }
+        // Tokens SDK
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
         maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.9"
+    version = "0.10"
     apply plugin: 'project-report'
 
     configurations {
