@@ -2,9 +2,9 @@ buildscript {
     ext {
 
         corda_release_group = 'net.corda'
-        corda_release_version = '4.4'
-        corda_gradle_plugins_version = '5.0.6'
-        corda_platform_version = '4'
+        corda_release_version = '4.5'
+        corda_gradle_plugins_version = '5.0.8'
+        corda_platform_version = '7'
         dokka_version = '0.9.17'
         jupiter_version = '5.3.2'
         kotlin_version = '1.2.71'
@@ -13,6 +13,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         jcenter()
+        maven { url 'https://software.r3.com/artifactory/corda' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
     }
     dependencies {
@@ -62,6 +63,7 @@ allprojects {
         mavenCentral()
         jcenter()
         maven { url 'https://jitpack.io' }
+        maven { url 'https://software.r3.com/artifactory/corda' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases' }
         // Tokens SDK
@@ -69,7 +71,7 @@ allprojects {
         maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     }
     group = "com.github.manosbatsis.partiture"
-    version = "0.10"
+    version = "0.11-SNAPSHOT"
 
     configurations {
         // Adding a configuration that extends existing configuration:
