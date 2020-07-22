@@ -34,13 +34,13 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
+import java.security.PublicKey
 
 /**
  * Base [FlowLogic] implementation, includes common utilities
  */
 abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
-    open val forceIdentitySync = false
 
     /** Get a list of nodes in the network, including self and notaries */
     fun allNodes(): List<Party> {
@@ -62,13 +62,17 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
         }.map { it.legalIdentities.first() }
     }
 
-    /** Filter the participants to get a [FlowSession] per distinct counter-party. */
+    /** Filter the participants to get a [FlowSession] per counter-party. */
     @Suspendable
     open fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> {
-        val filtered = participants.distinct().filter { it.owningKey != ourIdentity.owningKey }
+        val myKeys = serviceHub.keyManagementService.filterMyKeys(participants.map { it.owningKey })
+        val filtered = participants
+                .map { toWellKnownParty(it) }
+                //.filter { it.owningKey != ourIdentity.owningKey }
+                .filter { !myKeys.contains(it.owningKey) }
         val sessions = mutableSetOf<FlowSession>()
-        for(p in filtered){
-            sessions.add(initiateFlow(toWellKnownParty(p)))
+        for(party in filtered){
+            sessions.add(initiateFlow(party))
         }
         return sessions
     }
@@ -76,20 +80,23 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     /** Push our identities to the given counter-party sessions */
     @Suspendable
-    fun pushOurIdentities(sessions: Set<FlowSession>, tx: WireTransaction, progressTracker: ProgressTracker) {
+    open fun pushOurIdentities(sessions: Set<FlowSession>, tx: WireTransaction, progressTracker: ProgressTracker) {
         subFlow(IdentitySyncFlow.Send(sessions, tx, progressTracker))
 
     }
 
     /** Perform initial signing to the given mutable transaction */
     @Suspendable
-    fun signInitialTransaction(transactionBuilder: TransactionBuilder): SignedTransaction? {
-        return serviceHub.signInitialTransaction(transactionBuilder)
+    open fun signInitialTransaction(
+            transactionBuilder: TransactionBuilder,
+            signingPubKeys: Iterable<PublicKey>
+    ): SignedTransaction? {
+        return serviceHub.signInitialTransaction(transactionBuilder, signingPubKeys)
     }
 
     /** Finalize the given transaction */
     @Suspendable
-    fun finalizeTransaction(
+    open fun finalizeTransaction(
             tx: SignedTransaction, sessions: Set<FlowSession>, tracker: ProgressTracker
     ): SignedTransaction {
         return subFlow(FinalityFlow(tx, sessions, tracker))
@@ -126,9 +133,8 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      */
     fun toWellKnownParty(abstractParty: AbstractParty): Party =
             abstractParty as? Party
-                    ?: serviceHub.identityService.wellKnownPartyFromAnonymous(abstractParty)
-                    ?: throw RuntimeException("Could resolve to known party: ${abstractParty.nameOrNull()
-                            ?: "unknown"}")
+                    ?: serviceHub.identityService
+                            .requireWellKnownPartyFromAnonymous(abstractParty)
 
     /**
      * Resolve the given parties
@@ -139,7 +145,7 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
 
     /** Filter out self from said parties */
     fun Iterable<AbstractParty>.exceptMe(): List<AbstractParty> {
-        val myKeys = serviceHub.keyManagementService.keys
+        val myKeys = serviceHub.keyManagementService.filterMyKeys(this.map { it.owningKey })
         return this.filter { !myKeys.contains(it.owningKey) }
     }
 
@@ -186,10 +192,10 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      * Splits the original collection into pair of lists, where first list contains our identities
      * and the second list contains those belonging to counter-parties.
      */
-    fun partitionOursAndTheirs(
+    open fun partitionOursAndTheirs(
             parties: Collection<AbstractParty>
     ): Pair<List<AbstractParty>, List<AbstractParty>> {
-        val myKeys = serviceHub.keyManagementService.keys
+        val myKeys = serviceHub.keyManagementService.filterMyKeys(parties.map { it.owningKey })
         return parties.partition { myKeys.contains(it.owningKey) }
     }
 
@@ -217,5 +223,9 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
             else (identityService.partiesFromName(name, true).singleOrNull()
                     ?: identityService.partiesFromName(name, false).singleOrNull())
                     ?: throw FlowException("Party not found for string '${name}'")
+
+    open fun ourParticipatingKeys(ourParties: List<AbstractParty>): Iterable<PublicKey> {
+        return ourParties.map { it.owningKey }
+    }
 
 }

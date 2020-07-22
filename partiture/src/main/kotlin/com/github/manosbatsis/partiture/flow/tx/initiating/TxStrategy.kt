@@ -26,9 +26,14 @@ import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegate
 import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.contextLogger
 
 /** Transaction strategy delegate. */
 interface TxStrategy : PartitureFlowDelegate {
+
+    companion object{
+        private val logger = contextLogger()
+    }
 
     /**
      * Provide the appropriate [ProgressTracker] to the calling flow.
@@ -64,6 +69,7 @@ interface TxStrategy : PartitureFlowDelegate {
      * @return the same step
      */
     fun step(step: ProgressTracker.Step): ProgressTracker.Step {
+        logger.debug("Step: $step")
         clientFlow.progressTracker.currentStep = step
         return step
     }

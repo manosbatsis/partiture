@@ -20,6 +20,7 @@
 package mypackage.cordapp.workflow
 
 
+import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.PartitureFlow
 import com.github.manosbatsis.partiture.flow.PartitureResponderFlow
 import com.github.manosbatsis.partiture.flow.call.CallContext
@@ -46,6 +47,8 @@ data class YoMessage(
 )
 
 class YoInputConverter : PartitureFlowDelegateBase(), InputConverter<YoMessage> {
+
+    @Suspendable
     override fun convert(input: YoMessage): CallContext {
         // Prepare a TX builder
         val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())

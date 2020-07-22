@@ -28,10 +28,10 @@ import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
 import com.github.manosbatsis.partiture.flow.tx.initiating.SimpleTxStrategy
 import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategy
 import com.github.manosbatsis.partiture.flow.tx.initiating.TxStrategyExecutionException
+import com.github.manosbatsis.partiture.flow.util.IdentitySyncMode
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
 import net.corda.core.utilities.ProgressTracker
 
 /**
@@ -41,7 +41,8 @@ open class PartitureFlow<IN, OUT>(
         val input: IN,
         val txStrategy: TxStrategy = SimpleTxStrategy(),
         val inputConverter: InputConverter<IN>? = null,
-        val outputConverter: OutputConverter<OUT>? = null
+        val outputConverter: OutputConverter<OUT>? = null,
+        val identitySyncMode: IdentitySyncMode = IdentitySyncMode.NORMAL
 ) : PartitureUtilsFlowLogic<OUT>() {
 
     /** Obtain the appropriate progressTracker from the given [TxStrategy] */
@@ -81,15 +82,6 @@ open class PartitureFlow<IN, OUT>(
     /** Called after counterparty sessions are created */
     @Suspendable
     open fun postCreateFlowSessions(sessions: Set<FlowSession> = emptySet()) { /* NO-OP */
-    }
-
-
-    /** Filter the participants to get a [FlowSession] per distinct counter-party. */
-    @Suspendable
-    final override fun createFlowSessions(participants: Iterable<AbstractParty>): Set<FlowSession> {
-        val sessions = super.createFlowSessions(participants)
-        this.callContext.sessions = sessions
-        return sessions
     }
 
     /**
@@ -147,4 +139,5 @@ open class PartitureFlow<IN, OUT>(
         // throw it by default
         throw e
     }
+
 }

@@ -23,10 +23,14 @@ import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
+import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle.SYNC_IDENTITIES
+import com.github.manosbatsis.partiture.flow.util.IdentitySyncMode
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowSession
+import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.AnonymousParty
+import net.corda.core.utilities.contextLogger
 
 /**
  * This (currently default) transaction strategy implementation will:
@@ -40,6 +44,10 @@ import net.corda.core.identity.AnonymousParty
  *      - Finalize the transaction
  */
 open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
+
+    companion object{
+        private val logger = contextLogger()
+    }
 
     /** Provides an instance pre-configured with the default progress steps */
     override val progressTracker = SimpleInitiatingLifecycle.progressTracker()
@@ -60,29 +68,33 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
     @Suppress("UNUSED_VALUE")
     override fun executeFor(ccEntry: CallContextEntry) {
         step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
-        // Perform initial transaction signature
-        ccEntry.initial = clientFlow
-                .signInitialTransaction(ccEntry.transactionBuilder)
-        // Get our own and counter-parties
+        logger.info("Get our own and counter-parties")
+        clientFlow.ourIdentity
         val (ourParties, counterParties) =
                 clientFlow.partitionOursAndTheirs(ccEntry.participants)
+        val ourParticipantKeys = clientFlow.ourParticipatingKeys(ourParties)
+        logger.info("Perform initial transaction signature")
+        ccEntry.initial = clientFlow.signInitialTransaction(
+                ccEntry.transactionBuilder,
+                ourParticipantKeys)
+
+        logger.info("Our parties: $ourParties")
+        logger.info("Counter parties: $counterParties")
         // Counter-sign and sync
         var sessions: Set<FlowSession> = setOf()
         if (counterParties.isNotEmpty()) {
             // Create counter-party sessions
             step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
             sessions = clientFlow.createFlowSessions(counterParties)
+
+            logger.info("Sessions: $sessions")
             // Perform an ID sync if any of our own participating parties is anonymous
-            if (clientFlow.forceIdentitySync || ourParties.any { it is AnonymousParty }) {
-                val currentStep = step(SimpleInitiatingLifecycle.SYNC_IDENTITIES)
-                clientFlow.pushOurIdentities(
-                        sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
-            }
+            syncIdentities(ourParties, counterParties, sessions, ccEntry)
             clientFlow.postCreateFlowSessions(sessions)
             // Retrieve counter-party signatures
             val currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
             val counterSigned = clientFlow.subFlow(CollectSignaturesFlow(
-                    ccEntry.initial!!, sessions, currentStep.childProgressTracker()!!))
+                    ccEntry.initial!!, sessions, ourParticipantKeys, currentStep.childProgressTracker()!!))
             step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
             if(ccEntry.transactionBuilder.notary != null)
                 counterSigned.verifySignaturesExcept(ccEntry.transactionBuilder.notary!!.owningKey)
@@ -98,5 +110,20 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         ccEntry.finalized = clientFlow.finalizeTransaction(
                 ccEntry.counterSigned?:ccEntry.initial!!, sessions,
                 currentStep.childProgressTracker()!!)
+    }
+
+    @Suspendable
+    protected open fun syncIdentities(
+            ourParties: List<AbstractParty>,
+            counterParties: List<AbstractParty>,
+            sessions: Set<FlowSession>,
+            ccEntry: CallContextEntry) {
+        if (clientFlow.identitySyncMode == IdentitySyncMode.FORCE
+                || (clientFlow.identitySyncMode == IdentitySyncMode.NORMAL
+                        &&ourParties.any { it is AnonymousParty })) {
+            val currentStep = step(SYNC_IDENTITIES)
+            clientFlow.pushOurIdentities(
+                    sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
+        }
     }
 }

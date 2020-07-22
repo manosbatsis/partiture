@@ -19,6 +19,7 @@
  */
 package com.github.manosbatsis.partiture.flow.io.output
 
+import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import net.corda.core.transactions.SignedTransaction
@@ -33,6 +34,8 @@ class FinalizedTxOutputConverter(
         /** Whether to ignore [CallContext] entries without a finalized TX */
         val allowMissing: Boolean = false
 ) : PartitureFlowDelegateBase(), OutputConverter<List<SignedTransaction>> {
+
+    @Suspendable
     override fun convert(input: CallContext): List<SignedTransaction> {
         return input.entries.mapNotNull {
             it.finalized ?: if(allowMissing) null else throw IllegalArgumentException(MSG_NO_FIN_TX)
@@ -45,6 +48,8 @@ class FinalizedTxOutputConverter(
  * throws an error otherwise.
  */
 class SingleFinalizedTxOutputConverter : PartitureFlowDelegateBase(), OutputConverter<SignedTransaction> {
+
+    @Suspendable
     override fun convert(input: CallContext): SignedTransaction {
         return input.entries.mapNotNull { it.finalized }.single()
     }

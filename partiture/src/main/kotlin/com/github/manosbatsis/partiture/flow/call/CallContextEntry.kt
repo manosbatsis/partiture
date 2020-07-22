@@ -31,8 +31,8 @@ import net.corda.core.transactions.TransactionBuilder
 data class CallContextEntry(
         /** A fully initialized TransactionBuilder instance */
         val transactionBuilder: TransactionBuilder,
-        /** The participants for this transaction */
-        val participants: Set<AbstractParty>,
+        /** The non-unique participants for this transaction */
+        val participants: List<AbstractParty>,
         /** The main initially signed transaction */
         var initial: SignedTransaction? = null,
         /** The main counter-signed transaction */

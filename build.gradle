@@ -69,9 +69,8 @@ allprojects {
         // Tokens SDK
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
         maven { url 'https://repo.gradle.org/gradle/libs-releases' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
-    group = "com.github.manosbatsis.partiture"
-    version = "0.11-SNAPSHOT"
 
     configurations {
         // Adding a configuration that extends existing configuration:

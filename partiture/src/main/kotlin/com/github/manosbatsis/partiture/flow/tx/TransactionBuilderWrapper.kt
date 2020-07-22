@@ -19,8 +19,21 @@
  */
 package com.github.manosbatsis.partiture.flow.tx
 
+import co.paralleluniverse.fibers.Suspendable
 import co.paralleluniverse.strands.Strand
-import net.corda.core.contracts.*
+import net.corda.core.contracts.AttachmentConstraint
+import net.corda.core.contracts.AutomaticPlaceholderConstraint
+import net.corda.core.contracts.Command
+import net.corda.core.contracts.CommandData
+import net.corda.core.contracts.ContractClassName
+import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.PrivacySalt
+import net.corda.core.contracts.ReferencedStateAndRef
+import net.corda.core.contracts.StateAndContract
+import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.StateRef
+import net.corda.core.contracts.TimeWindow
+import net.corda.core.contracts.TransactionState
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
@@ -32,7 +45,7 @@ import net.corda.core.utilities.contextLogger
 import java.security.PublicKey
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /**
  * Wraps [TransactionBuilder] to provide convenient access to `participants` of all
@@ -89,8 +102,10 @@ class TransactionBuilderWrapper() {
     /** Create a [TransactionBuilder] */
     private lateinit var transactionBuilder: TransactionBuilder
 
-    /** Provides the participants of all input and output states - but not StateRefs */
-    private val participants: MutableSet<AbstractParty> = mutableSetOf()
+    /**
+     * Provides the participants of all (non-unique) input and output states - but not StateRefs
+     */
+    private val participants: MutableList<AbstractParty> = mutableListOf()
 
     /** Adds a [Command] created using the given [CommandData] and currently known participants */
     fun addAttachment(attachmentId: SecureHash): TransactionBuilderWrapper {
@@ -119,6 +134,7 @@ class TransactionBuilderWrapper() {
     }
 
     /** A default notary must be specified during builder construction to use this method */
+    @Suspendable
     fun addOutputState(
             state: ContractState,
             contract: ContractClassName,
@@ -167,6 +183,7 @@ class TransactionBuilderWrapper() {
     }
 
     /** Adds an input [StateRef] to the transaction, taking note of it's participants. */
+    @Suspendable
     fun addInputState(stateAndRef: StateAndRef<*>): TransactionBuilderWrapper {
         participants.addAll(stateAndRef.state.data.participants)
         transactionBuilder.addInputState(stateAndRef)
@@ -179,6 +196,7 @@ class TransactionBuilderWrapper() {
      * Note: Reference states are only supported on Corda networks running a minimum platform version of 4.
      * [toWireTransaction] will throw an [IllegalStateException] if called in such an environment.
      */
+    @Suspendable
     fun addReferenceState(referencedStateAndRef: ReferencedStateAndRef<*>): TransactionBuilderWrapper {
         transactionBuilder.addReferenceState(referencedStateAndRef)
         return this

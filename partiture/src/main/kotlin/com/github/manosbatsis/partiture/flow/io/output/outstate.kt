@@ -19,6 +19,7 @@
  */
 package com.github.manosbatsis.partiture.flow.io.output
 
+import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegateBase
 import net.corda.core.contracts.ContractState
@@ -32,6 +33,7 @@ open class OutputStatesConverter(
         val filter: Predicate<ContractState>? = null
 ) : PartitureFlowDelegateBase(), OutputConverter<List<ContractState>> {
 
+    @Suspendable
     override  fun convert(input: CallContext): List<ContractState> {
         // Gather the output states
         val outputStates = input.entries.mapNotNull { it.finalized }
@@ -53,6 +55,7 @@ open class TypedOutputStatesConverter<T: ContractState>(
         val filter: Predicate<ContractState>? = null
 ) : PartitureFlowDelegateBase(), OutputConverter<List<T>> {
 
+    @Suspendable
     override  fun convert(input: CallContext): List<T> {
         // Gather the output states that match the target type
         val outputStates = input.entries.mapNotNull { it.finalized }

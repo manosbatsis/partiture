@@ -26,6 +26,7 @@ import com.github.manosbatsis.partiture.flow.PartitureFlow
 interface PartitureFlowConverterDelegate<in IN, out OUT> : PartitureFlowDelegate {
 
     /** Convenient chain method */
+    @Suspendable
     fun setClientFlow(clientFlow: PartitureFlow<*, *>): PartitureFlowConverterDelegate<IN, OUT> {
         this.clientFlow = clientFlow;
         return this
