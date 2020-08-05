@@ -70,6 +70,10 @@ Both of the above flow implementations will:
 3. Use the provided `outputConverter` to produce and return the flow's `call()` result, i.e. a signed TX per _Yo!_ state created
 
 
+#### Corda Accounts Support
+
+If you are using Corda Accounts, use `PartitureAccountsAwareFlow` instead.
+
 ### Sample Responding Flow 
 
 This is our responder flow. It uses the biuld-in  `SimpleTypeCheckingResponderTxStrategy`:

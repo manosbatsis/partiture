@@ -5,6 +5,11 @@ title: Changelog
 
 The following sections describe major changes per version and can be helpful with version upgrades.
 
+## 0.11
+
+- Upgraded Corda dependencies to 4.5
+- Added support for Corda Accounts with `PartitureAccountsAwareFlow` 
+
 ## 0.10
 
 - Upgraded Corda dependencies to 4.4
