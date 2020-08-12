@@ -56,7 +56,9 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
     @Throws(TxStrategyExecutionException::class)
     override fun execute() {
         try {
-            clientFlow.callContext.entries.forEach { executeFor(it) }
+            for(entry in clientFlow.callContext.entries){
+                executeFor(entry)
+            }
         } catch (e: FlowException) {
             throw TxStrategyExecutionException("Failed to execute strategy", e, e.originalErrorId)
         } catch (e: Exception) {
@@ -67,8 +69,9 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
     @Suspendable
     @Suppress("UNUSED_VALUE")
     override fun executeFor(ccEntry: CallContextEntry) {
-        step(SimpleInitiatingLifecycle.SIGN_INITIAL_TX)
+        step(SimpleInitiatingLifecycle.TRANSACTION_SIGN_INITIAL)
         logger.info("Get our own and counter-parties")
+
         clientFlow.ourIdentity
         val (ourParties, counterParties) =
                 clientFlow.partitionOursAndTheirs(ccEntry.participants)
@@ -84,7 +87,7 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         var sessions: Set<FlowSession> = setOf()
         if (counterParties.isNotEmpty()) {
             // Create counter-party sessions
-            step(SimpleInitiatingLifecycle.CREATE_SESSIONS)
+            step(SimpleInitiatingLifecycle.TRANSACTION_CREATE_SESSIONS)
             sessions = clientFlow.createFlowSessions(counterParties)
 
             logger.info("Sessions: $sessions")
@@ -92,10 +95,10 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
             syncIdentities(ourParties, counterParties, sessions, ccEntry)
             clientFlow.postCreateFlowSessions(sessions)
             // Retrieve counter-party signatures
-            val currentStep = step(SimpleInitiatingLifecycle.GATHER_SIGNATURES)
+            val currentStep = step(SimpleInitiatingLifecycle.TRANSACTION_GATHER_SIGNATURES)
             val counterSigned = clientFlow.subFlow(CollectSignaturesFlow(
                     ccEntry.initial!!, sessions, ourParticipantKeys, currentStep.childProgressTracker()!!))
-            step(SimpleInitiatingLifecycle.VERIFY_SIGNATURES)
+            step(SimpleInitiatingLifecycle.TRANSACTION_VERIFY_SIGNATURES)
             if(ccEntry.transactionBuilder.notary != null)
                 counterSigned.verifySignaturesExcept(ccEntry.transactionBuilder.notary!!.owningKey)
             else counterSigned.verifyRequiredSignatures()
@@ -103,13 +106,18 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
         }
         // Verify TX builder state
         @Suppress("UNUSED_VALUE")
-        step(SimpleInitiatingLifecycle.VERIFY_TRANSACTION_DATA)
+        step(SimpleInitiatingLifecycle.TRANSACTION_VERIFY_DATA)
         ccEntry.transactionBuilder.verify(clientFlow.serviceHub)
+
         // Finalize
-        val currentStep = step(SimpleInitiatingLifecycle.FINALIZE)
+        val currentStep = step(SimpleInitiatingLifecycle.TRANSACTION_FINALIZE)
         ccEntry.finalized = clientFlow.finalizeTransaction(
                 ccEntry.counterSigned?:ccEntry.initial!!, sessions,
                 currentStep.childProgressTracker()!!)
+
+        // Perform any post-processing of transactions
+        step(SimpleInitiatingLifecycle.TRANSACTION_POST_EXECUTE)
+        postExecuteFor(ourParties, counterParties, sessions, ccEntry)
     }
 
     @Suspendable
@@ -125,5 +133,15 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
             clientFlow.pushOurIdentities(
                     sessions, ccEntry.initial!!.tx, currentStep.childProgressTracker()!!)
         }
+    }
+
+    @Suspendable
+    override fun postExecuteFor(
+            ourParties: List<AbstractParty>,
+            counterParties: List<AbstractParty>,
+            sessions: Set<FlowSession>,
+            ccEntry: CallContextEntry) {
+        clientFlow.postExecuteFor(ourParties, counterParties, sessions, ccEntry)
+
     }
 }

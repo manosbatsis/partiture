@@ -21,6 +21,7 @@ package com.github.manosbatsis.partiture.flow
 
 import co.paralleluniverse.fibers.Suspendable
 import com.github.manosbatsis.partiture.flow.call.CallContext
+import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowConverterDelegate
 import com.github.manosbatsis.partiture.flow.io.input.InputConverter
 import com.github.manosbatsis.partiture.flow.io.output.OutputConverter
@@ -32,6 +33,7 @@ import com.github.manosbatsis.partiture.flow.util.IdentitySyncMode
 import com.github.manosbatsis.partiture.flow.util.PartitureUtilsFlowLogic
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
+import net.corda.core.identity.AbstractParty
 import net.corda.core.utilities.ProgressTracker
 
 /**
@@ -113,8 +115,6 @@ open class PartitureFlow<IN, OUT>(
         } catch(e: TxStrategyExecutionException) {
             this.handleFailedTxStrategy(e)
         }
-        // Perform any post-processing of transactions
-        progressTracker.currentStep = SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS
         // Process and return output
         progressTracker.currentStep = SimpleInitiatingLifecycle.PROCESS_OUTPUT
         val output = this.processOutput()
@@ -134,10 +134,23 @@ open class PartitureFlow<IN, OUT>(
      * Handle a TX strategy execution error.
      * The default implementation simply throws the given exception
      */
+    @Suspendable
     open fun handleFailedTxStrategy(e: TxStrategyExecutionException) {
         logger.error("Strategy errored: ${this.javaClass.simpleName}: ")
         // throw it by default
         throw e
     }
 
+    /**
+     * Override to perform any TX post processing
+     */
+    @Suspendable
+    open fun postExecuteFor(
+            ourParties: List<AbstractParty>,
+            counterParties: List<AbstractParty>,
+            sessions: Set<FlowSession>,
+            ccEntry: CallContextEntry
+    ){
+        // NOOP
+    }
 }

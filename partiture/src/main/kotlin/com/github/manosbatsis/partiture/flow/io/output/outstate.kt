@@ -59,11 +59,27 @@ open class TypedOutputStatesConverter<T: ContractState>(
     override  fun convert(input: CallContext): List<T> {
         // Gather the output states that match the target type
         val outputStates = input.entries.mapNotNull { it.finalized }
-                .flatMap { it.tx.outputStates }.filterIsInstance(contractStateType)
+                .flatMap { it.tx.outRefsOfType(contractStateType) }
+                .map { it.state.data }
         // Return as-is or use filter if available
         return if(filter == null) outputStates
         else {
             outputStates.filter { filter.test(it) }
         }
     }
+}
+
+/**
+ * Output the single output state of the given type.
+ */
+open class TypedOutputSingleStateConverter<T: ContractState>(
+        val contractStateType: Class<T>
+) : PartitureFlowDelegateBase(), OutputConverter<T> {
+
+    @Suspendable
+    override  fun convert(input: CallContext): T =
+            TypedOutputStatesConverter(contractStateType)
+                    .convert(input)
+                    .single()
+
 }

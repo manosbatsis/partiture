@@ -25,6 +25,8 @@ import com.github.manosbatsis.partiture.flow.call.CallContext
 import com.github.manosbatsis.partiture.flow.call.CallContextEntry
 import com.github.manosbatsis.partiture.flow.delegate.initiating.PartitureFlowDelegate
 import com.github.manosbatsis.partiture.flow.lifecycle.SimpleInitiatingLifecycle
+import net.corda.core.flows.FlowSession
+import net.corda.core.identity.AbstractParty
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.contextLogger
 
@@ -46,7 +48,7 @@ interface TxStrategy : PartitureFlowDelegate {
      *
      * and end with
      *
-     * - [SimpleInitiatingLifecycle.POST_EXECUTE_TRANSACTIONS]
+     * - [SimpleInitiatingLifecycle.TRANSACTION_POST_EXECUTE]
      * - [SimpleInitiatingLifecycle.PROCESS_OUTPUT]
      *
      * as those steps are always used by the calling flow. Any in-between steps depend solely on your implementation.
@@ -99,4 +101,6 @@ interface TxStrategy : PartitureFlowDelegate {
     @Suspendable
     @Throws(TxStrategyExecutionException::class)
     fun executeFor(ccEntry: CallContextEntry)
+    @Suspendable
+    fun postExecuteFor(ourParties: List<AbstractParty>, counterParties: List<AbstractParty>, sessions: Set<FlowSession>, ccEntry: CallContextEntry)
 }

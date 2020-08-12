@@ -3,7 +3,14 @@ id: changelog
 title: Changelog
 ---
 
-The following sections describe major changes per version and can be helpful with version upgrades.
+The following sections describe major changes per version and 
+can be helpful with version upgrades.
+
+## 0.12
+
+`PartitureAccountsAwareFlow` will now use `ShareStateAndSyncAccounts` 
+to sync generated account keys for states of a transaction after it 
+has been finalized.
 
 ## 0.11
 

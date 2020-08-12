@@ -33,23 +33,23 @@ object SimpleInitiatingLifecycle : Lifecycle {
     object PROCESS_INPUT : ProgressTracker.Step("Processing input.")
     object POST_PROCESS_INPUT : ProgressTracker.Step("Input post-processing.")
     object EXECUTE_TRANSACTIONS : ProgressTracker.Step("Executing transactions.")
-    object SIGN_INITIAL_TX : ProgressTracker.Step("Signing initial transaction.")
-    object CREATE_SESSIONS : ProgressTracker.Step("Creating counter-party sessions.")
+    object TRANSACTION_SIGN_INITIAL : ProgressTracker.Step("Signing initial transaction.")
+    object TRANSACTION_CREATE_SESSIONS : ProgressTracker.Step("Creating counter-party sessions.")
     object SYNC_IDENTITIES : ProgressTracker.Step("Syncing identities.") {
         override fun childProgressTracker() = IdentitySyncFlow.Send.tracker()
     }
 
-    object GATHER_SIGNATURES : ProgressTracker.Step("Collecting counter-party signatures.") {
+    object TRANSACTION_GATHER_SIGNATURES : ProgressTracker.Step("Collecting counter-party signatures.") {
         override fun childProgressTracker() = CollectSignaturesFlow.tracker()
     }
 
-    object VERIFY_SIGNATURES : ProgressTracker.Step("Verify the transaction's signatures.")
-    object VERIFY_TRANSACTION_DATA : ProgressTracker.Step("Verifying transaction data.")
-    object FINALIZE : ProgressTracker.Step("Finalising transaction.") {
+    object TRANSACTION_VERIFY_SIGNATURES : ProgressTracker.Step("Verify the transaction's signatures.")
+    object TRANSACTION_VERIFY_DATA : ProgressTracker.Step("Verifying transaction data.")
+    object TRANSACTION_FINALIZE : ProgressTracker.Step("Finalising transaction.") {
         override fun childProgressTracker() = FinalityFlow.tracker()
     }
 
-    object POST_EXECUTE_TRANSACTIONS : ProgressTracker.Step("Perform transactions post-processing.")
+    object TRANSACTION_POST_EXECUTE : ProgressTracker.Step("Perform transactions post-processing.")
     object PROCESS_OUTPUT : ProgressTracker.Step("Process output.")
 
     /** Create a [ProgressTracker] with the appropriate steps */
@@ -58,13 +58,13 @@ object SimpleInitiatingLifecycle : Lifecycle {
             PROCESS_INPUT,
             POST_PROCESS_INPUT,
             EXECUTE_TRANSACTIONS,
-            SIGN_INITIAL_TX,
-            CREATE_SESSIONS,
+            TRANSACTION_SIGN_INITIAL,
+            TRANSACTION_CREATE_SESSIONS,
             SYNC_IDENTITIES,
-            GATHER_SIGNATURES,
-            VERIFY_SIGNATURES,
-            VERIFY_TRANSACTION_DATA,
-            FINALIZE,
-            POST_EXECUTE_TRANSACTIONS,
+            TRANSACTION_GATHER_SIGNATURES,
+            TRANSACTION_VERIFY_SIGNATURES,
+            TRANSACTION_VERIFY_DATA,
+            TRANSACTION_FINALIZE,
+            TRANSACTION_POST_EXECUTE,
             PROCESS_OUTPUT)
 }
