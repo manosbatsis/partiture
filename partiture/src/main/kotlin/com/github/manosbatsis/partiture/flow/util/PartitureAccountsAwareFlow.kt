@@ -34,12 +34,12 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
     /** Assume all participants are accounts and need a [FlowSession] */
     @Suspendable
     override fun createFlowSessions(
-            counterParties: Iterable<AbstractParty>
+            participants: Iterable<AbstractParty>
     ): Set<FlowSession> {
         val ourId = this.ourIdentity.name.toString()
-        println("$ourId createFlowSessions, parties: ${counterParties.joinToString (",") }}")
+        println("$ourId createFlowSessions, parties: ${participants.joinToString (",") }}")
         val sessions = mutableSetOf<FlowSession>()
-        for(party in counterParties){
+        for(party in participants){
             println("$ourId createFlowSessions, open session for AbstractParty: ${party}")
 
             val wellKnown = toWellKnownParty(party)
