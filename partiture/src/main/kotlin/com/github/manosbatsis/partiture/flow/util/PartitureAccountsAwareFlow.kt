@@ -59,16 +59,7 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
         println("$ourId createFlowSessions, parties: ${participants.joinToString (",") }}")
         val sessions = mutableSetOf<FlowSession>()
         for(party in participants){
-            println("$ourId createFlowSessions, open session for AbstractParty: ${party}")
-
             val wellKnown = toWellKnownParty(party)
-            println("$ourId createFlowSessions, open session for Party: ${wellKnown.name}")
-/*
-Our parties:     [Anonymous(DLEGd12j5kANU38Cgio9SfwxP4vDy9C99kwwAPyharm5GB),
-              Anonymous(DL34bbWXUpqJ4ULeXjhJVHw3GQkYmR8fSfUC8R1RQVznLB)] {actor_id=Only For Testing, actor_owning_identity=O=PartyB, L=New York, C=US, actor_store_id=TEST, fiber-id=10000009, flow-id=ecff83ae-d0b7-4d14-9658-1b35bd7cef0b, invocation_id=fdd4d7e7-1314-421d-abf8-4f5281145465, invocation_timestamp=2020-08-12T08:48:37.233Z, origin=Only For Testing, session_id=fdd4d7e7-1314-421d-abf8-4f5281145465, session_timestamp=2020-08-12T08:48:37.233Z, thread-id=1660, tx_id=A6AAC37BCFCDFDE01593CFD09E5917EF681B5E1F5387F2E4CB73B422C668BC29}
-Counter parties: [Anonymous(DLCHickUdb2oFss7HE2KnZt9s8cti2vbCQiLc62EvALAz6),
-              Anonymous(DLBC5NWkPosprW4kASn4BkGqi9M4vu4cvaHY98d925jqRt)] {actor_id=Only For Testing, actor_owning_identity=O=PartyB, L=New York, C=US, actor_store_id=TEST, fiber-id=10000009, flow-id=ecff83ae-d0b7-4d14-9658-1b35bd7cef0b, invocation_id=fdd4d7e7-1314-421d-abf8-4f5281145465, invocation_timestamp=2020-08-12T08:48:37.233Z, origin=Only For Testing, session_id=fdd4d7e7-1314-421d-abf8-4f5281145465, session_timestamp=2020-08-12T08:48:37.233Z,
-*/
             sessions.add(initiateFlow(party))
 
         }
