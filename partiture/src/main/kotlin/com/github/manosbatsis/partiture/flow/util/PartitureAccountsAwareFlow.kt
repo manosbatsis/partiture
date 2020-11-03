@@ -45,7 +45,7 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
         input: IN,
         txStrategy: TxStrategy = SimpleTxStrategy(),
         inputConverter: InputConverter<IN>? = null,
-        outputConverter: OutputConverter<OUT>?
+        outputConverter: OutputConverter<OUT>? = null
 ) : PartitureFlow<IN, OUT>(
         input, txStrategy, inputConverter, outputConverter, SKIP
 ){
