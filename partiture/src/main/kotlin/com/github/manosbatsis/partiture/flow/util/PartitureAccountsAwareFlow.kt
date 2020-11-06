@@ -34,6 +34,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.AnonymousParty
+import net.corda.core.identity.CordaX500Name
 import java.security.PublicKey
 
 
@@ -55,15 +56,14 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
     override fun createFlowSessions(
             participants: Iterable<AbstractParty>
     ): Set<FlowSession> {
-        val ourId = this.ourIdentity.name.toString()
-        println("$ourId createFlowSessions, parties: ${participants.joinToString (",") }}")
-        val sessions = mutableSetOf<FlowSession>()
+        val partySessions = mutableMapOf<CordaX500Name, FlowSession>()
         for(party in participants){
             val wellKnown = toWellKnownParty(party)
-            sessions.add(initiateFlow(party))
+            if(!partySessions.keys.contains(wellKnown.name))
+                partySessions[wellKnown.name] = initiateFlow(party)
 
         }
-        return sessions
+        return partySessions.values.toSet()
     }
 
     /** Use both our account and node identity keys in context */
