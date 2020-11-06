@@ -111,6 +111,21 @@ class YoFlowTests {
         assertEquals(yo.toString(), result.single().toString())
     }
 
+    @Test
+    fun `Test flow with multiple participant instances of the same Corda Account`() {
+        val msg = "Yo3"
+        val yos = listOf(
+                YoContract.YoState(a.info.legalIdentities.first(), b.info.legalIdentities.first(),"${msg}a"),
+                YoContract.YoState(a.info.legalIdentities.first(), b.info.legalIdentities.first(),"${msg}b"),
+                YoContract.YoState(b.info.legalIdentities.first(), a.info.legalIdentities.first(),"${msg}c"),
+                YoContract.YoState(b.info.legalIdentities.first(), a.info.legalIdentities.first(),"${msg}d")
+        )
+
+        val result = flowWorksCorrectly(YoFlow3(yos))
+
+        assertEquals(4, result.filter{it.yo.startsWith(msg)}.size)
+    }
+
     inline fun <reified OUT> flowWorksCorrectly(flow: PartitureFlow<*, OUT>): OUT {
         val future = a.startFlow(flow)
         // Ask nodes to process any queued up inbound messages

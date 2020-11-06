@@ -53,9 +53,22 @@ class YoInputConverter : PartitureFlowDelegateBase(), InputConverter<YoMessage> 
         // Prepare a TX builder
         val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
                 .addOutputState(
-                    YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
-                    YO_CONTRACT_ID)
+                        YoContract.YoState(clientFlow.ourIdentity, input.recepient, input.message),
+                        YO_CONTRACT_ID)
                 .addCommand(YoContract.Send())
+        // Return a TX context with builder and participants
+        return CallContext(CallContextEntry(txBuilder))
+    }
+}
+
+class YoInputsConverter : PartitureFlowDelegateBase(), InputConverter<Iterable<YoContract.YoState>> {
+
+    @Suspendable
+    override fun convert(inputs: Iterable<YoContract.YoState>): CallContext {
+        // Prepare a TX builder
+        val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
+        for(input in inputs) txBuilder.addOutputState(input, YO_CONTRACT_ID)
+        txBuilder.addCommand(YoContract.Send())
         // Return a TX context with builder and participants
         return CallContext(CallContextEntry(txBuilder))
     }
@@ -106,3 +119,21 @@ class YoFlow2(input: YoMessage) : PartitureFlow<YoMessage, List<YoContract.YoSta
  */
 @InitiatedBy(YoFlow2::class)
 class YoFlow2Responder(otherPartySession: FlowSession) : BaseYoFlowResponder(otherPartySession)
+
+/**
+ * Create a Yo! transaction/state for each input recipient/party.
+ * Tests TypedOutputStatesConverter
+ */
+@InitiatingFlow
+@StartableByRPC
+class YoFlow3(input: Iterable<YoContract.YoState>) : PartitureFlow<Iterable<YoContract.YoState>, List<YoContract.YoState>>(
+        input = input, // Input can be anything
+        inputConverter = YoInputsConverter(),// Our custom IN converter
+        // OUT build-in converter
+        outputConverter = TypedOutputStatesConverter(YoContract.YoState::class.java))
+
+/**
+ * A basic responder for countersigning and listening for finality
+ */
+@InitiatedBy(YoFlow3::class)
+class YoFlow3Responder(otherPartySession: FlowSession) : BaseYoFlowResponder(otherPartySession)
