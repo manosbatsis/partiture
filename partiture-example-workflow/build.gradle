@@ -1,7 +1,22 @@
-
+apply plugin: "idea"
+apply plugin: 'kotlin-kapt'
 apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
+
+def generatedSourcesDir = project.file("build/generated/source/kaptKotlin/main")
+sourceSets {
+    main {
+        kotlin.srcDirs += generatedSourcesDir
+    }
+}
+
+idea {
+    module {
+        sourceDirs += generatedSourcesDir
+        generatedSourceDirs += generatedSourcesDir
+    }
+}
 
 cordapp {
     targetPlatformVersion 4
@@ -23,8 +38,12 @@ dependencies {
     cordaCompile "$corda_release_group:corda-jackson:$corda_release_version"
     cordaCompile "$corda_release_group:corda-rpc:$corda_release_version"
     cordaRuntime "$corda_release_group:corda:$corda_release_version"
+    // Corda Accounts deps
+    cordaCompile "$accounts_release_group:accounts-workflows:$accounts_release_version"
+    cordaCompile "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
     // Use Partiture for corda flows etc.
     cordapp project(":partiture")
+    // Generate code with Vaultaire
     cordapp "com.github.manosbatsis.vaultaire:vaultaire:$vaultaire_version"
     cordapp "com.github.manosbatsis.vaultaire:vaultaire-plugin-accounts:$vaultaire_version"
     // Annotation processing

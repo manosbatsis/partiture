@@ -33,8 +33,6 @@ import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.CordaX500Name
 import java.security.PublicKey
 
 
@@ -56,11 +54,11 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
     override fun createFlowSessions(
             participants: Iterable<AbstractParty>
     ): Set<FlowSession> {
-        val partySessions = mutableMapOf<CordaX500Name, FlowSession>()
+        val partySessions = mutableMapOf<PublicKey, FlowSession>()
         for(party in participants){
             val wellKnown = toWellKnownParty(party)
-            if(!partySessions.keys.contains(wellKnown.name))
-                partySessions[wellKnown.name] = initiateFlow(party)
+            if(!partySessions.keys.contains(wellKnown.owningKey))
+                partySessions[wellKnown.owningKey] = initiateFlow(wellKnown)
 
         }
         return partySessions.values.toSet()
@@ -69,12 +67,8 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
     /** Use both our account and node identity keys in context */
     @Suspendable
     override fun ourParticipatingKeys(ourParties: List<AbstractParty>): Iterable<PublicKey> {
-        val identityService = serviceHub.identityService
-        val nodeKeys = ourParties
-                .filterIsInstance(AnonymousParty::class.java)
-                .map { identityService.requireWellKnownPartyFromAnonymous(AnonymousParty(it.owningKey)) }
-                .map { it.owningKey }
-        val accountKeys = ourParties.map { it.owningKey }
+        val nodeKeys = ourParties.map { toWellKnownParty(it).owningKey }.toSet()
+        val accountKeys = ourParties.map { it.owningKey }.toSet()
         return nodeKeys + accountKeys
     }
 
