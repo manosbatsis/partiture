@@ -6,6 +6,11 @@ title: Changelog
 The following sections describe major changes per version and 
 can be helpful with version upgrades.
 
+## 0.14
+
+- Added tests for Corda Accounts.
+- Fixed flow sessions issue; there were duplicates in some cases.
+
 ## 0.12-13
 
 `PartitureAccountsAwareFlow` will now use `ShareStateAndSyncAccounts` 
