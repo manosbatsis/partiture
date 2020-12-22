@@ -67,9 +67,12 @@ abstract class PartitureAccountsAwareFlow<IN, OUT>(
     /** Use both our account and node identity keys in context */
     @Suspendable
     override fun ourParticipatingKeys(ourParties: List<AbstractParty>): Iterable<PublicKey> {
-        val nodeKeys = ourParties.map { toWellKnownParty(it).owningKey }.toSet()
-        val accountKeys = ourParties.map { it.owningKey }.toSet()
-        return nodeKeys + accountKeys
+        val publicKeys = mutableSetOf<PublicKey>()
+        for(party in ourParties){
+            publicKeys.add(party.owningKey)
+            publicKeys.add(toWellKnownParty(party).owningKey)
+        }
+        return publicKeys
     }
 
 
