@@ -35,6 +35,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.AbstractParty
 import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.ProgressTracker.Step
 
 /**
  * Base initiating [FlowLogic] implementation for flow composition
@@ -100,27 +101,34 @@ open class PartitureFlow<IN, OUT>(
 
     @Suspendable
     final override fun call(): OUT {
-        progressTracker.currentStep = SimpleInitiatingLifecycle.INITIALIZE
+        changeCurrentStep(SimpleInitiatingLifecycle.INITIALIZE)
         initialize()
         // Initialize the input/call context
-        progressTracker.currentStep = SimpleInitiatingLifecycle.PROCESS_INPUT
+        changeCurrentStep(SimpleInitiatingLifecycle.PROCESS_INPUT)
         this.callContext = processInput()
         // Perform any post-processing of the input/call context
-        progressTracker.currentStep = SimpleInitiatingLifecycle.POST_PROCESS_INPUT
+        changeCurrentStep(SimpleInitiatingLifecycle.POST_PROCESS_INPUT)
         postProcessInput()
         // Delegate processing to txStrategy
-        progressTracker.currentStep = SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS
+        changeCurrentStep(SimpleInitiatingLifecycle.EXECUTE_TRANSACTIONS)
         try {
             txStrategy.setClientFlow(this).execute()
         } catch(e: TxStrategyExecutionException) {
             this.handleFailedTxStrategy(e)
         }
         // Process and return output
-        progressTracker.currentStep = SimpleInitiatingLifecycle.PROCESS_OUTPUT
+        changeCurrentStep(SimpleInitiatingLifecycle.PROCESS_OUTPUT)
         val output = this.processOutput()
         // Update tracker to finished/DONE
-        progressTracker.currentStep = ProgressTracker.DONE
+        changeCurrentStep(ProgressTracker.DONE)
         return output
+    }
+
+    /** Changes the current step and logs the change. */
+    protected open fun changeCurrentStep(step: Step){
+        logger.debug("changeCurrentStep: $step")
+        progressTracker.currentStep = step
+
     }
 
     @Suspendable
