@@ -59,11 +59,17 @@ open class SimpleTxStrategy : PartitureFlowDelegateBase(), TxStrategy {
             for(entry in clientFlow.callContext.entries){
                 executeFor(entry)
             }
-        } catch (e: FlowException) {
-            throw TxStrategyExecutionException("Failed to execute strategy", e, e.originalErrorId)
         } catch (e: Exception) {
-            throw TxStrategyExecutionException("Failed to execute", e)
+            toTxStrategyExecutionException(e)
         }
+    }
+
+    private fun toTxStrategyExecutionException(e: Exception){
+        logger.error("Converting to TxStrategyExecutionException for flow ${clientFlow.javaClass.name}:", e)
+        if(e is FlowException)
+            throw TxStrategyExecutionException("Failed to execute strategy for flow ${clientFlow.javaClass.name}", e, e.originalErrorId)
+        else throw TxStrategyExecutionException("Failed to execute for flow ${clientFlow.javaClass.name}", e)
+
     }
 
     @Suspendable

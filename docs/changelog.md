@@ -6,6 +6,10 @@ title: Changelog
 The following sections describe major changes per version and 
 can be helpful with version upgrades.
 
+## 0.16
+
+- Improve error handling in TX strategies
+
 ## 0.15
 
 - Upgraded Corda dependencies to 4.6
