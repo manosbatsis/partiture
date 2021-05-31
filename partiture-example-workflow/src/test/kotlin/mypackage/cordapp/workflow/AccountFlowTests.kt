@@ -20,7 +20,7 @@
 package mypackage.cordapp.workflow
 
 import com.github.manosbatsis.partiture.flow.PartitureFlow
-import com.github.manosbatsis.vaultaire.plugin.accounts.dto.AccountInfoLiteDto
+import com.github.manosbatsis.vaultaire.plugin.accounts.dto.AccountInfoStateClientDto
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo
 import com.r3.corda.lib.accounts.workflows.flows.CreateAccount
 import com.r3.corda.lib.accounts.workflows.services.AccountService
@@ -55,8 +55,8 @@ class AccountYoFlowTests {
     lateinit var network: MockNetwork
     lateinit var a: StartedMockNode
     lateinit var b: StartedMockNode
-    lateinit var aAccount: AccountInfoLiteDto
-    lateinit var bAccount: AccountInfoLiteDto
+    lateinit var aAccount: AccountInfoStateClientDto
+    lateinit var bAccount: AccountInfoStateClientDto
 
     @BeforeAll
     fun setup() {
@@ -71,8 +71,8 @@ class AccountYoFlowTests {
         b = network.createPartyNode()
         network.runNetwork()
 
-        aAccount = AccountInfoLiteDto.mapToDto(flowWorksCorrectly(a, CreateAccount("a")).state.data)
-        bAccount = AccountInfoLiteDto.mapToDto(flowWorksCorrectly(b, CreateAccount("b")).state.data)
+        aAccount = AccountInfoStateClientDto.mapToDto(flowWorksCorrectly(a, CreateAccount("a")).state.data)
+        bAccount = AccountInfoStateClientDto.mapToDto(flowWorksCorrectly(b, CreateAccount("b")).state.data)
     }
 
     @AfterAll
@@ -85,7 +85,7 @@ class AccountYoFlowTests {
     fun `Test flow with SingleFinalizedTxOutputConverter`() {
         val msg = "AccountYo1"
         val stx = flowWorksCorrectly(
-                AccountYoFlow1(AccountYoStateLiteDto(sender = aAccount, recepient = bAccount, yo = msg)))
+                AccountYoFlow1(AccountYoStateClientDto(sender = aAccount, recepient = bAccount, yo = msg)))
         // Check yo transaction is stored in the storage service.
         val bTx = b.services.validatedTransactions.getTransaction(stx.id)
         assertEquals(bTx, stx)
@@ -95,7 +95,7 @@ class AccountYoFlowTests {
     fun `Test flow with testTypedOutputStatesConverter`() {
         val msg = "AccountYo2"
         val result = flowWorksCorrectly(
-                AccountYoFlow1(AccountYoStateLiteDto(
+                AccountYoFlow1(AccountYoStateClientDto(
                         sender = aAccount,
                         recepient = bAccount, yo = msg)))
 
@@ -106,10 +106,10 @@ class AccountYoFlowTests {
     fun `Test flow with multiple participant instances of the same Corda Account`() {
         val msg = "AccountYo3"
         val yos = listOf(
-                AccountYoStateLiteDto(aAccount, bAccount,"${msg}a"),
-                AccountYoStateLiteDto(aAccount, bAccount,"${msg}b"),
-                AccountYoStateLiteDto(bAccount, aAccount,"${msg}c"),
-                AccountYoStateLiteDto(bAccount, aAccount,"${msg}d")
+                AccountYoStateClientDto(aAccount, bAccount,"${msg}a"),
+                AccountYoStateClientDto(aAccount, bAccount,"${msg}b"),
+                AccountYoStateClientDto(bAccount, aAccount,"${msg}c"),
+                AccountYoStateClientDto(bAccount, aAccount,"${msg}d")
         )
 
         val result = flowWorksCorrectly(AccountYoFlow3(yos))

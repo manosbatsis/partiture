@@ -31,7 +31,7 @@ import com.github.manosbatsis.partiture.flow.io.output.TypedOutputStatesConverte
 import com.github.manosbatsis.partiture.flow.tx.TransactionBuilderWrapper
 import com.github.manosbatsis.partiture.flow.tx.responder.SimpleTypeCheckingResponderTxStrategy
 import com.github.manosbatsis.partiture.flow.util.PartitureAccountsAwareFlow
-import com.github.manosbatsis.vaultaire.annotation.VaultaireGenerateResponder
+import com.github.manosbatsis.vaultaire.annotation.VaultaireFlowResponder
 import mypackage.cordapp.contract.ACCOUNT_YO_CONTRACT_ID
 import mypackage.cordapp.contract.AccountYoContract
 import mypackage.cordapp.contract.AccountYoContract.AccountYoState
@@ -48,10 +48,10 @@ open class BaseAccountYoFlowResponder(
                 AccountYoState::class.java)
 )
 
-class AccountYoInputConverter : PartitureFlowDelegateBase(), InputConverter<AccountYoStateLiteDto> {
+class AccountYoInputConverter : PartitureFlowDelegateBase(), InputConverter<AccountYoStateClientDto> {
 
     @Suspendable
-    override fun convert(input: AccountYoStateLiteDto): CallContext {
+    override fun convert(input: AccountYoStateClientDto): CallContext {
         val stateService =AccountYoStateService(clientFlow.serviceHub)
         val contractState = input.toTargetType(stateService)
         // Prepare a TX builder
@@ -63,10 +63,10 @@ class AccountYoInputConverter : PartitureFlowDelegateBase(), InputConverter<Acco
     }
 }
 
-class AccountYoInputsConverter : PartitureFlowDelegateBase(), InputConverter<Iterable<AccountYoStateLiteDto>> {
+class AccountYoInputsConverter : PartitureFlowDelegateBase(), InputConverter<Iterable<AccountYoStateClientDto>> {
 
     @Suspendable
-    override fun convert(inputs: Iterable<AccountYoStateLiteDto>): CallContext {
+    override fun convert(inputs: Iterable<AccountYoStateClientDto>): CallContext {
         val stateService = AccountYoStateService(clientFlow.serviceHub)
         // Prepare a TX builder
         val txBuilder = TransactionBuilderWrapper(clientFlow.getFirstNotary())
@@ -85,11 +85,11 @@ class AccountYoInputsConverter : PartitureFlowDelegateBase(), InputConverter<Ite
  */
 @InitiatingFlow
 @StartableByRPC
-@VaultaireGenerateResponder(
+@VaultaireFlowResponder(
         value = BaseAccountYoFlowResponder::class,
         comment = "A basic responder for countersigning and listening for finality"
 )
-class AccountYoFlow1(input: AccountYoStateLiteDto) : PartitureAccountsAwareFlow<AccountYoStateLiteDto, SignedTransaction>(
+class AccountYoFlow1(input: AccountYoStateClientDto) : PartitureAccountsAwareFlow<AccountYoStateClientDto, SignedTransaction>(
         input = input, // Input can be anything
         inputConverter = AccountYoInputConverter(),// Our custom IN converter
         // OUT build-in converter
@@ -103,11 +103,11 @@ class AccountYoFlow1(input: AccountYoStateLiteDto) : PartitureAccountsAwareFlow<
  */
 @InitiatingFlow
 @StartableByRPC
-@VaultaireGenerateResponder(
+@VaultaireFlowResponder(
         value = BaseAccountYoFlowResponder::class,
         comment = "A basic responder for countersigning and listening for finality"
 )
-class AccountYoFlow2(input: AccountYoStateLiteDto) : PartitureAccountsAwareFlow<AccountYoStateLiteDto, List<AccountYoContract.AccountYoState>>(
+class AccountYoFlow2(input: AccountYoStateClientDto) : PartitureAccountsAwareFlow<AccountYoStateClientDto, List<AccountYoContract.AccountYoState>>(
         input = input, // Input can be anything
         inputConverter = AccountYoInputConverter(),// Our custom IN converter
         // OUT build-in converter
@@ -119,11 +119,11 @@ class AccountYoFlow2(input: AccountYoStateLiteDto) : PartitureAccountsAwareFlow<
  */
 @InitiatingFlow
 @StartableByRPC
-@VaultaireGenerateResponder(
+@VaultaireFlowResponder(
         value = BaseAccountYoFlowResponder::class,
         comment = "A basic responder for countersigning and listening for finality"
 )
-class AccountYoFlow3(input: Iterable<AccountYoStateLiteDto>) : PartitureAccountsAwareFlow<Iterable<AccountYoStateLiteDto>, List<AccountYoState>>(
+class AccountYoFlow3(input: Iterable<AccountYoStateClientDto>) : PartitureAccountsAwareFlow<Iterable<AccountYoStateClientDto>, List<AccountYoState>>(
         input = input, // Input can be anything
         inputConverter = AccountYoInputsConverter(),// Our custom IN converter
         // OUT build-in converter

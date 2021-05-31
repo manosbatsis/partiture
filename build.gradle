@@ -12,7 +12,7 @@ buildscript {
         confidential_id_release_group = 'com.r3.corda.lib.ci'
         confidential_id_release_version = '1.0'
 
-        vaultaire_version = '0.34'
+        vaultaire_version = '0.40'
         dokka_version = '0.9.17'
         jupiter_version = '5.3.2'
         kotlin_version = '1.2.71'

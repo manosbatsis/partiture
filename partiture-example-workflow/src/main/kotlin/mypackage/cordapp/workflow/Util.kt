@@ -1,16 +1,16 @@
 package mypackage.cordapp.workflow
 
 import com.github.manosbatsis.vaultaire.annotation.VaultaireDtoStrategyKeys
-import com.github.manosbatsis.vaultaire.annotation.VaultaireGenerateDtoForDependency
-import com.github.manosbatsis.vaultaire.annotation.VaultaireGenerateForDependency
+import com.github.manosbatsis.vaultaire.annotation.VaultaireStateDtoMixin
+import com.github.manosbatsis.vaultaire.annotation.VaultaireStateUtilsMixin
 import mypackage.cordapp.contract.AccountYoContract.AccountYoState
 import mypackage.cordapp.contract.AccountYoContract.AccountYoState.AccountYoSchemaV1.PersistentAccountYoState
 
-@VaultaireGenerateForDependency(name = "fungibleTokenConditions",
+@VaultaireStateUtilsMixin(name = "fungibleTokenConditions",
         persistentStateType = PersistentAccountYoState::class,
         contractStateType = AccountYoState::class)
-@VaultaireGenerateDtoForDependency(
+@VaultaireStateDtoMixin(
         persistentStateType = PersistentAccountYoState::class,
         contractStateType = AccountYoState::class,
-        strategies = [VaultaireDtoStrategyKeys.DEFAULT, VaultaireDtoStrategyKeys.LITE])
+        strategies = [VaultaireDtoStrategyKeys.CORDAPP_CLIENT_DTO, VaultaireDtoStrategyKeys.CORDAPP_LOCAL_DTO])
 class AccountYoMixin
