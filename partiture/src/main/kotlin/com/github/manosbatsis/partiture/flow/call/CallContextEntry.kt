@@ -48,7 +48,7 @@ data class CallContextEntry(
     constructor(
             transactionBuilderWrapper: TransactionBuilderWrapper
     ) : this(
-            transactionBuilderWrapper.transactionBuilder(), transactionBuilderWrapper.participants()
+            transactionBuilderWrapper.delegateTxBuilder(), transactionBuilderWrapper.participants()
     )
 
     /**

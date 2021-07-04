@@ -12,7 +12,7 @@
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *     Lesser General Public License for more details.
  *
- *     AccountYou should have received a copy of the GNU Lesser General Public
+ *     You should have received a copy of the GNU Lesser General Public
  *     License along with this library; if not, write to the Free Software
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
@@ -71,8 +71,8 @@ class AccountYoFlowTests {
         b = network.createPartyNode()
         network.runNetwork()
 
-        aAccount = AccountInfoStateClientDto.mapToDto(flowWorksCorrectly(a, CreateAccount("a")).state.data)
-        bAccount = AccountInfoStateClientDto.mapToDto(flowWorksCorrectly(b, CreateAccount("b")).state.data)
+        aAccount = AccountInfoStateClientDto.from(flowWorksCorrectly(a, CreateAccount("a")).state.data)
+        bAccount = AccountInfoStateClientDto.from(flowWorksCorrectly(b, CreateAccount("b")).state.data)
     }
 
     @AfterAll

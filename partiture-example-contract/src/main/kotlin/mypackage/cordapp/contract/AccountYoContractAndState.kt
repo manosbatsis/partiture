@@ -12,7 +12,7 @@
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *     Lesser General Public License for more details.
  *
- *     AccountYou should have received a copy of the GNU Lesser General Public
+ *     You should have received a copy of the GNU Lesser General Public
  *     License along with this library; if not, write to the Free Software
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
@@ -20,12 +20,7 @@
 package mypackage.cordapp.contract
 
 import com.github.manosbatsis.vaultaire.dto.AccountParty
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.TypeOnlyCommandData
-import net.corda.core.contracts.requireSingleCommand
-import net.corda.core.contracts.requireThat
+import net.corda.core.contracts.*
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState

@@ -6,6 +6,14 @@ title: Changelog
 The following sections describe major changes per version and 
 can be helpful with version upgrades.
 
+## 0.18
+
+- Delegating TX Builder wrapper improvements
+
+## 0.17
+
+- Dependency updates
+
 ## 0.16
 
 - Improve error handling in TX strategies

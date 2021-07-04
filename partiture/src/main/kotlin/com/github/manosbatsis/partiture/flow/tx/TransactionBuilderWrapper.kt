@@ -21,23 +21,12 @@ package com.github.manosbatsis.partiture.flow.tx
 
 import co.paralleluniverse.fibers.Suspendable
 import co.paralleluniverse.strands.Strand
-import net.corda.core.contracts.AttachmentConstraint
-import net.corda.core.contracts.AutomaticPlaceholderConstraint
-import net.corda.core.contracts.Command
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.ContractClassName
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.PrivacySalt
-import net.corda.core.contracts.ReferencedStateAndRef
-import net.corda.core.contracts.StateAndContract
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.StateRef
-import net.corda.core.contracts.TimeWindow
-import net.corda.core.contracts.TransactionState
+import net.corda.core.contracts.*
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.internal.FlowStateMachine
+import net.corda.core.internal.requiredContractClassName
 import net.corda.core.internal.toWireTransaction
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.TransactionBuilder
@@ -45,14 +34,18 @@ import net.corda.core.utilities.contextLogger
 import java.security.PublicKey
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * Wraps [TransactionBuilder] to provide convenient access to `participants` of all
  * input and output states (but not `StateRef `s) that have already been added at any point.
  */
-class TransactionBuilderWrapper() {
+class TransactionBuilderWrapper private constructor(
+        private val delegateTxBuilder: TransactionBuilder,
+        /** Provides the participants of all (non-unique) input and output states - but not StateRefs */
+        private val participants: MutableList<AbstractParty> = mutableListOf()
 
+) {
     private companion object {
         private fun defaultLockId() = (Strand.currentStrand() as? FlowStateMachine<*>)?.id?.uuid ?: UUID.randomUUID()
         private val log = contextLogger()
@@ -94,60 +87,65 @@ class TransactionBuilderWrapper() {
                     references = references,
                     serviceHub = serviceHub))
 
-    private constructor(transactionBuilder: TransactionBuilder, participants: Iterable<AbstractParty>? = null) : this() {
-        this.transactionBuilder = transactionBuilder
-        if(participants != null) this.participants.addAll(participants)
-    }
-
-    /** Create a [TransactionBuilder] */
-    private lateinit var transactionBuilder: TransactionBuilder
-
-    /**
-     * Provides the participants of all (non-unique) input and output states - but not StateRefs
-     */
-    private val participants: MutableList<AbstractParty> = mutableListOf()
+    var notary: Party?
+        get() = delegateTxBuilder.notary
+        set(value) {
+            if (delegateTxBuilder.notary == null) {
+                delegateTxBuilder.notary = value
+            }
+            check(delegateTxBuilder.notary == value) {
+                "Notary passed to transaction builder (${delegateTxBuilder.notary}) " +
+                        "should be the same as the one used by input states ($value)."
+            }
+        }
+    
+    val lockId: UUID
+        get() = delegateTxBuilder.lockId
 
     /** Adds a [Command] created using the given [CommandData] and currently known participants */
     fun addAttachment(attachmentId: SecureHash): TransactionBuilderWrapper {
-        transactionBuilder.addAttachment(attachmentId)
+        delegateTxBuilder.addAttachment(attachmentId)
         return this
     }
 
     /** Adds an output state to the transaction. */
     fun addOutputState(state: TransactionState<*>): TransactionBuilderWrapper {
         participants.addAll(state.data.participants)
-        transactionBuilder.addOutputState(state)
+        delegateTxBuilder.addOutputState(state)
         return this
     }
+
 
     /** Adds an output state, with associated contract code (and constraints), and notary, to the transaction. */
+    @JvmOverloads
     fun addOutputState(
             state: ContractState,
-            contract: ContractClassName ,
-            notary: Party,
-            encumbrance: Int? = null,
-            constraint: AttachmentConstraint
+            contract: ContractClassName = requireNotNullContractClassName(state),
+            notary: Party, encumbrance: Int? = null,
+            constraint: AttachmentConstraint = AutomaticPlaceholderConstraint
     ): TransactionBuilderWrapper {
-        participants.addAll(state.participants)
-        transactionBuilder.addOutputState(state, contract, notary, encumbrance, constraint)
+        return addOutputState(TransactionState(state, contract, notary, encumbrance, constraint))
+    }
+
+    /** Adds an output state. A default notary must be specified during builder construction to use this method */
+    @JvmOverloads
+    fun addOutputState(
+            state: ContractState,
+            contract: ContractClassName = requireNotNullContractClassName(state),
+            constraint: AttachmentConstraint = AutomaticPlaceholderConstraint
+    ): TransactionBuilderWrapper {
+        checkNotNull(notary) { "Need to specify a notary for the state, or set a default one on TransactionBuilder initialisation" }
+        addOutputState(state, contract, notary!!, constraint = constraint)
         return this
     }
 
-    /** A default notary must be specified during builder construction to use this method */
-    @Suspendable
-    fun addOutputState(
-            state: ContractState,
-            contract: ContractClassName,
-            constraint: AttachmentConstraint = AutomaticPlaceholderConstraint
-    ): TransactionBuilderWrapper {
-        participants.addAll(state.participants)
-        transactionBuilder.addOutputState(state, contract, constraint = constraint)
-        return this
+    fun addOutputState(state: ContractState, constraint: AttachmentConstraint): TransactionBuilderWrapper {
+        return addOutputState(state, requireNotNullContractClassName(state), constraint)
     }
 
     /** Adds a [Command] to the transaction. */
     fun addCommand(arg: Command<*>): TransactionBuilderWrapper {
-        transactionBuilder.addCommand(arg)
+        delegateTxBuilder.addCommand(arg)
         return this
     }
 
@@ -164,7 +162,7 @@ class TransactionBuilderWrapper() {
      * the Timestamp Authority.
      */
     fun setTimeWindow(timeWindow: TimeWindow) : TransactionBuilderWrapper {
-        transactionBuilder.setTimeWindow(timeWindow)
+        delegateTxBuilder.setTimeWindow(timeWindow)
         return this
     }
 
@@ -178,7 +176,7 @@ class TransactionBuilderWrapper() {
     fun setTimeWindow(time: Instant, timeTolerance: Duration): TransactionBuilderWrapper = setTimeWindow(TimeWindow.withTolerance(time, timeTolerance))
 
     fun setPrivacySalt(privacySalt: PrivacySalt): TransactionBuilderWrapper {
-        transactionBuilder.setPrivacySalt(privacySalt)
+        delegateTxBuilder.setPrivacySalt(privacySalt)
         return this
     }
 
@@ -186,7 +184,7 @@ class TransactionBuilderWrapper() {
     @Suspendable
     fun addInputState(stateAndRef: StateAndRef<*>): TransactionBuilderWrapper {
         participants.addAll(stateAndRef.state.data.participants)
-        transactionBuilder.addInputState(stateAndRef)
+        delegateTxBuilder.addInputState(stateAndRef)
         return this
     }
 
@@ -198,30 +196,30 @@ class TransactionBuilderWrapper() {
      */
     @Suspendable
     fun addReferenceState(referencedStateAndRef: ReferencedStateAndRef<*>): TransactionBuilderWrapper {
-        transactionBuilder.addReferenceState(referencedStateAndRef)
+        delegateTxBuilder.addReferenceState(referencedStateAndRef)
         return this
     }
 
     /** Adds a [Command] created using the given [CommandData] and currently known participants */
     fun addCommand(commandData: CommandData): TransactionBuilderWrapper {
-        transactionBuilder.addCommand(Command(commandData, this.participants.map { it.owningKey }))
+        delegateTxBuilder.addCommand(Command(commandData, this.participants.map { it.owningKey }))
         return this
     }
 
     /** Returns an immutable list of input [StateRef]s. */
-    fun inputStates(): List<StateRef> = transactionBuilder.inputStates()
+    fun inputStates(): List<StateRef> = delegateTxBuilder.inputStates()
 
     /** Returns an immutable list of reference input [StateRef]s. */
-    fun referenceStates(): List<StateRef> = transactionBuilder.referenceStates()
+    fun referenceStates(): List<StateRef> = delegateTxBuilder.referenceStates()
 
     /** Returns an immutable list of attachment hashes. */
-    fun attachments(): List<SecureHash> = transactionBuilder.attachments()
+    fun attachments(): List<SecureHash> = delegateTxBuilder.attachments()
 
     /** Returns an immutable list of output [TransactionState]s. */
-    fun outputStates(): List<TransactionState<*>> = transactionBuilder.outputStates()
+    fun outputStates(): List<TransactionState<*>> = delegateTxBuilder.outputStates()
 
     /** Returns an immutable list of [Command]s, grouping by [CommandData] and joining signers (from v4, v3 and below return all commands with duplicates for different signers). */
-    fun commands(): List<Command<*>> = transactionBuilder.commands()
+    fun commands(): List<Command<*>> = delegateTxBuilder.commands()
 
     fun withItems(vararg items: Any) = apply {
         for (t in items) {
@@ -244,12 +242,21 @@ class TransactionBuilderWrapper() {
     /** Creates a copy of the wrapper */
     fun copy(): TransactionBuilderWrapper =
             TransactionBuilderWrapper(
-                    transactionBuilder = transactionBuilder.copy(),
+                    delegateTxBuilder = delegateTxBuilder.copy(),
                     participants = participants
             )
 
     /** Get the inner [TransactionBuilder] */
-    fun transactionBuilder() = this.transactionBuilder
+    fun delegateTxBuilder() = this.delegateTxBuilder
     /** Get the participants of current input/output states */
     fun participants() = this.participants
+
+    private fun requireNotNullContractClassName(state: ContractState) = requireNotNull(state.requiredContractClassName) {
+        //TODO: add link to docsite page, when there is one.
+        """
+        Unable to infer Contract class name because state class ${state::class.java.name} is not annotated with
+        @BelongsToContract, and does not have an enclosing class which implements Contract. Either annotate ${state::class.java.name}
+        with @BelongsToContract, or supply an explicit contract parameter to addOutputState().
+        """.trimIndent().replace('\n', ' ')
+    }
 }

@@ -2,4 +2,5 @@ rootProject.name = "partiture-parent"
 include("partiture",
         "partiture-test",
 		"partiture-example-contract",
-		"partiture-example-workflow")
+		"partiture-example-workflow",
+		"partiture-adapter-tokensdk10")

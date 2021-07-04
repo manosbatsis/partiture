@@ -12,7 +12,10 @@ buildscript {
         confidential_id_release_group = 'com.r3.corda.lib.ci'
         confidential_id_release_version = '1.0'
 
-        vaultaire_version = '0.40'
+        token_sdk_release_group = 'com.r3.corda.lib.tokens'
+        token_sdk_release_version = '1.1'
+
+        vaultaire_version = '0.43'
         dokka_version = '0.9.17'
         jupiter_version = '5.3.2'
         kotlin_version = '1.2.71'
@@ -164,7 +167,10 @@ subprojects {
     }
 
 }
-configure([project(':partiture'), project(':partiture-test')]) {
+configure([
+        project(':partiture'),
+        project(':partiture-test'),
+        project(':partiture-adapter-tokensdk10')]) {
     apply plugin: 'org.jetbrains.dokka'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
