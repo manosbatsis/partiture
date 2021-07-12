@@ -40,10 +40,10 @@ import java.util.*
  * Wraps [TransactionBuilder] to provide convenient access to `participants` of all
  * input and output states (but not `StateRef `s) that have already been added at any point.
  */
-class TransactionBuilderWrapper private constructor(
-        private val delegateTxBuilder: TransactionBuilder,
+class TransactionBuilderWrapper (
+        val delegateTxBuilder: TransactionBuilder,
         /** Provides the participants of all (non-unique) input and output states - but not StateRefs */
-        private val participants: MutableList<AbstractParty> = mutableListOf()
+        val participants: MutableList<AbstractParty> = mutableListOf()
 
 ) {
     private companion object {
@@ -185,6 +185,12 @@ class TransactionBuilderWrapper private constructor(
     fun addInputState(stateAndRef: StateAndRef<*>): TransactionBuilderWrapper {
         participants.addAll(stateAndRef.state.data.participants)
         delegateTxBuilder.addInputState(stateAndRef)
+        return this
+    }
+
+    @Suspendable
+    fun maybeAddInput(stateAndRef: StateAndRef<*>?): TransactionBuilderWrapper {
+        if(stateAndRef != null) addInputState(stateAndRef)
         return this
     }
 

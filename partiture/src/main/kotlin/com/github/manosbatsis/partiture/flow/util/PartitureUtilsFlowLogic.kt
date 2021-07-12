@@ -21,6 +21,7 @@ package com.github.manosbatsis.partiture.flow.util
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.IdentitySyncFlow
+import net.corda.core.contracts.StateRef
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
@@ -33,6 +34,7 @@ import net.corda.core.node.services.IdentityService
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
+import net.corda.core.utilities.NonEmptySet
 import net.corda.core.utilities.ProgressTracker
 import java.security.PublicKey
 
@@ -70,6 +72,7 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
                 .map { toWellKnownParty(it) }
                 //.filter { it.owningKey != ourIdentity.owningKey }
                 .filter { !myKeys.contains(it.owningKey) }
+                .distinctBy { it.owningKey }
         val sessions = mutableSetOf<FlowSession>()
         for(party in filtered){
             sessions.add(initiateFlow(party))
@@ -193,10 +196,17 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
      * and the second list contains those belonging to counter-parties.
      */
     open fun partitionOursAndTheirs(
-            parties: Collection<AbstractParty>
+            participants: Collection<AbstractParty>
     ): Pair<List<AbstractParty>, List<AbstractParty>> {
-        val myKeys = serviceHub.keyManagementService.filterMyKeys(parties.map { it.owningKey })
-        return parties.partition { myKeys.contains(it.owningKey) }
+        val ours = mutableListOf<AbstractParty>()
+        val theirs = mutableListOf<AbstractParty>()
+        val keyManagementService = serviceHub.keyManagementService
+        participants.forEach {
+            if(keyManagementService.filterMyKeys(listOf(it.owningKey)).iterator().hasNext())
+                ours.add(it)
+            else theirs.add(it)
+        }
+        return ours to theirs
     }
 
     /**
@@ -228,4 +238,12 @@ abstract class PartitureUtilsFlowLogic<out T> : FlowLogic<T>() {
         return ourParties.map { it.owningKey }
     }
 
+    /**
+     * Soft-lock the state using the runId
+     * to unlock automatically when flow exits
+     */
+    fun softLock(stateRef: StateRef) {
+        serviceHub.vaultService.softLockReserve(
+            runId.uuid, NonEmptySet.of(stateRef))
+    }
 }
